@@ -8,17 +8,17 @@ import java.util.List;
 
 public class GuicedEEClientPostStartup implements IGuicePostStartup<GuicedEEClientPostStartup>
 {
-
-    @Override
-    public List<Future<Boolean>> postLoad()
-    {
-        IGuicedWebSocket.loadWebSocketReceivers();
-        return List.of(Future.succeededFuture(true));
-    }
-
-    @Override
-    public Integer sortOrder()
-    {
-        return Integer.MIN_VALUE + 650;
-    }
+		
+		@Override
+		public List<Future<Boolean>> postLoad()
+		{
+				IGuicedWebSocket.loadWebSocketReceivers();
+				return List.of(Future.succeededFuture(true));
+		}
+		
+		@Override
+		public Integer sortOrder()
+		{
+				return Integer.MIN_VALUE + 650;
+		}
 }

@@ -395,7 +395,7 @@ public interface IGuiceContext
 															.getName());*/
 		}
 		
-		Set<IGuicePreDestroy> loadPreDestroyServices();
+  Set<IGuicePreDestroy> loadPreDestroyServices();
 		
 		Set<IGuicePreStartup> loadPreStartupServices();
 }

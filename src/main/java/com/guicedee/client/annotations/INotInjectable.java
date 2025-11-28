@@ -3,14 +3,15 @@ package com.guicedee.client.annotations;
 import java.lang.annotation.*;
 
 /**
- * Marker interface to identify if the class is not injectable
- */
+	* Marker interface to identify if the class is not injectable
+	*/
 
 @Target(
-        {
-                ElementType.TYPE, ElementType.TYPE_USE
-        })
+	{
+		ElementType.TYPE, ElementType.TYPE_USE
+	})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface INotInjectable {
+public @interface INotInjectable
+{
 }

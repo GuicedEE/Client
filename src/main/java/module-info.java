@@ -2,7 +2,6 @@ import com.guicedee.client.implementations.GuicedEEClientModule;
 import com.guicedee.client.implementations.GuicedEEClientPostStartup;
 import com.guicedee.client.implementations.GuicedEEClientStartup;
 import com.guicedee.client.services.IGuiceProvider;
-import com.guicedee.client.services.IJobServiceProvider;
 import com.guicedee.client.services.lifecycle.*;
 import com.guicedee.client.services.websocket.IWebSocketMessageReceiver;
 
@@ -34,7 +33,6 @@ module com.guicedee.client {
 		requires io.smallrye.mutiny;
 		
 		uses IGuiceProvider;
-		uses IJobServiceProvider;
 		uses IOnCallScopeEnter;
 		uses IOnCallScopeExit;
 		uses IWebSocketMessageReceiver;
