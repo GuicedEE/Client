@@ -1,7 +1,7 @@
 package com.guicedee.client.implementations;
 
-import com.guicedee.guicedinjection.interfaces.IGuicePostStartup;
-import com.guicedee.guicedservlets.websockets.options.IGuicedWebSocket;
+import com.guicedee.client.services.lifecycle.IGuicePostStartup;
+import com.guicedee.client.services.websocket.IGuicedWebSocket;
 import io.vertx.core.Future;
 
 import java.util.List;

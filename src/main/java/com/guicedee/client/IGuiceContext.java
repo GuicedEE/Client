@@ -2,16 +2,15 @@ package com.guicedee.client;
 
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.guicedee.guicedinjection.interfaces.IGuiceConfig;
-import com.guicedee.guicedinjection.interfaces.IGuicePreDestroy;
-import com.guicedee.guicedinjection.interfaces.IGuicePreStartup;
-import com.guicedee.guicedinjection.interfaces.IGuiceProvider;
-import com.guicedee.guicedinjection.interfaces.annotations.INotEnhanceable;
-import com.guicedee.guicedinjection.interfaces.annotations.INotInjectable;
+import com.guicedee.client.services.IGuiceConfig;
+import com.guicedee.client.services.lifecycle.IGuicePreDestroy;
+import com.guicedee.client.services.lifecycle.IGuicePreStartup;
+import com.guicedee.client.services.IGuiceProvider;
+import com.guicedee.client.annotations.INotEnhanceable;
+import com.guicedee.client.annotations.INotInjectable;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
 import io.vertx.core.Future;
-import org.apache.logging.log4j.LogManager;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
