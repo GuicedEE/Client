@@ -112,9 +112,9 @@ Versioning & Support
 - Java LTS alignment per PACT selections.
 
 License
-- Copyright © The GuicedEE Contributors.
-- License: GNU General Public License v3.0 (GPL‑3.0).
-- Reference: https://www.gnu.org/licenses/gpl-3.0.en.html
+ - Copyright © The GuicedEE Contributors.
+ - License: Apache License, Version 2.0.
+ - Reference: https://www.apache.org/licenses/LICENSE-2.0
 
 Acknowledgements
 - Built on top of GuicedEE, Guice, Vert.x, Mutiny, and other excellent open‑source libraries. See pom.xml for the full dependency set.
