@@ -1,6 +1,13 @@
-# GuicedEE Inject Client
+# 🚀 GuicedEE Inject Client
 
-An extension library for GuicedEE that provides client‑side injection utilities, lifecycle hooks, and module wiring to simplify bootstrapping client components in Java applications.
+[![JDK](https://img.shields.io/badge/JDK-25%2B-0A7?logo=java)](https://openjdk.org/projects/jdk/25/)
+[![Build](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven)](https://maven.apache.org/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+
+<!-- Tech icons row -->
+![Guice](https://img.shields.io/badge/Guice-Core-2F4F4F)
+![GuicedEE](https://img.shields.io/badge/GuicedEE-Client-0A7)
+![JPMS](https://img.shields.io/badge/JPMS-Modules-0A7)
 
 This repository follows a documentation‑first, stage‑gated workflow using the Rules Repository model (Pact → Rules → Guides → Implementation). See the key docs below for full details.
 

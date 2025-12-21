@@ -3,8 +3,10 @@ package com.guicedee.client.utils;
 import com.google.common.base.Strings;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.apache.logging.log4j.core.appender.rolling.CompositeTriggeringPolicy;
 import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
@@ -13,15 +15,59 @@ import org.apache.logging.log4j.core.appender.rolling.TimeBasedTriggeringPolicy;
 import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.JsonLayout;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
 public class LogUtils
 {
     private static final Set<String> names = new HashSet<>();
+
+    private static boolean isCloud()
+    {
+        // Lazy access to Environment to avoid circular init; refer by FQN
+        String v;
+        try
+        {
+            v = com.guicedee.client.Environment.getSystemPropertyOrEnvironment("CLOUD", "false");
+        }
+        catch (Throwable t)
+        {
+            v = System.getProperty("CLOUD", System.getenv().getOrDefault("CLOUD", "false"));
+        }
+        if (v == null)
+            return false;
+        String s = v.trim().toLowerCase();
+        return s.equals("true") || s.equals("1") || s.equals("yes") || s.equals("y") || s.equals("on");
+    }
+
+    private static Layout<? extends Serializable> buildLayout(boolean highlighted)
+    {
+        if (isCloud())
+        {
+            // JSON output for cloud-friendly ingestion
+            return JsonLayout.newBuilder()
+                    .setComplete(false)
+                    .setCompact(true)
+                    .setEventEol(true)
+                    .build();
+        }
+        if (highlighted)
+        {
+            String pattern = "%highlight{[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level]} - %msg%n";
+            return PatternLayout.newBuilder()
+                    .withPattern(pattern)
+                    .withAlwaysWriteExceptions(true)
+                    .build();
+        }
+        return PatternLayout.newBuilder()
+                .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level] - [%msg]%n")
+                .build();
+    }
 
     // Sanitize file base names for Windows reserved names and illegal characters.
     // This does NOT change the logger name, only the generated file name.
@@ -65,6 +111,80 @@ public class LogUtils
         return s;
     }
 
+    /**
+     * Adds a ConsoleAppender that logs to System.out with a sensible default pattern.
+     * If already added in this JVM, this is a no-op.
+     */
+    public static void addConsoleLogger()
+    {
+        addConsoleLogger(Level.DEBUG);
+    }
+
+    /**
+     * Adds a ConsoleAppender that logs to System.out at the given level.
+     * If already added in this JVM, this is a no-op.
+     */
+    public static void addConsoleLogger(Level level)
+    {
+        String key = "console_stdout";
+        if (names.contains(key))
+            return;
+        names.add(key);
+
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+
+        Layout<? extends Serializable> layout = buildLayout(false);
+
+        ConsoleAppender consoleAppender = ConsoleAppender.newBuilder()
+                .setName("ConsoleStdOut")
+                .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
+                .setLayout(layout)
+                .setFollow(true)
+                .build();
+        consoleAppender.start();
+
+        config.addAppender(consoleAppender);
+        config.getRootLogger().addAppender(consoleAppender, level == null ? Level.DEBUG : level, null);
+    }
+
+    /**
+     * Adds a highlighted ConsoleAppender (ANSI colors) to System.out using Log4j2 %highlight pattern converter.
+     * If already added in this JVM, this is a no-op.
+     */
+    public static void addHighlightedConsoleLogger()
+    {
+        addHighlightedConsoleLogger(Level.DEBUG);
+    }
+
+    /**
+     * Adds a highlighted ConsoleAppender (ANSI colors) to System.out at the given level.
+     * If already added in this JVM, this is a no-op.
+     */
+    public static void addHighlightedConsoleLogger(Level level)
+    {
+        String key = "console_stdout_highlight";
+        if (names.contains(key))
+            return;
+        names.add(key);
+
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+
+        Layout<? extends Serializable> layout = buildLayout(true);
+
+        ConsoleAppender consoleAppender = ConsoleAppender.newBuilder()
+                .setName("ConsoleStdOutHighlight")
+                .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
+                .setLayout(layout)
+                .setFollow(true)
+                .build();
+        consoleAppender.start();
+
+        config.addAppender(consoleAppender);
+        config.getRootLogger().addAppender(consoleAppender, level == null ? Level.DEBUG : level, null);
+    }
+
     public static void addFileRollingLogger(String name, String baseLogFolder)
     {
         if (names.contains(name))
@@ -78,9 +198,7 @@ public class LogUtils
         String safeBase = sanitizeForWindows(name);
         String logFileName = safeBase + ".log";
 
-        PatternLayout layout = PatternLayout.newBuilder()
-                .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level] - [%msg]%n")
-                .build();
+        Layout<? extends Serializable> layout = buildLayout(false);
 
         RollingFileAppender rollingFileAppender = RollingFileAppender.newBuilder()
                 .withFileName(logFolderPath + "/" + logFileName)
@@ -126,9 +244,7 @@ public class LogUtils
         String safeBase = sanitizeForWindows(name);
         String logFileName = safeBase + ".log";
 
-        PatternLayout layout = PatternLayout.newBuilder()
-                .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level] - [%msg]%n")
-                .build();
+        Layout<? extends Serializable> layout = buildLayout(false);
 
         RollingFileAppender rollingFileAppender = RollingFileAppender.newBuilder()
                 .withFileName(logFolderPath + "/" + logFileName)

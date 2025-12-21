@@ -4,6 +4,7 @@ import com.guicedee.client.implementations.GuicedEEClientStartup;
 import com.guicedee.client.services.IGuiceProvider;
 import com.guicedee.client.services.lifecycle.*;
 import com.guicedee.client.services.websocket.IWebSocketMessageReceiver;
+import com.guicedee.client.scopes.mutiny.CallScopeUniInterceptor;
 
 module com.guicedee.client {
 		requires transitive com.google.guice;
@@ -45,6 +46,7 @@ module com.guicedee.client {
 		exports com.guicedee.client.utils;
 		opens com.guicedee.client.utils to com.fasterxml.jackson.databind;
 		exports com.guicedee.client.scopes;
+		exports com.guicedee.client.scopes.mutiny;
 		opens com.guicedee.client.scopes to com.fasterxml.jackson.databind;
 		opens com.guicedee.client.services to com.google.guice;
 		opens com.guicedee.client.annotations to com.google.guice;
@@ -58,4 +60,5 @@ module com.guicedee.client {
 		provides IGuicePreStartup with GuicedEEClientStartup;
 		provides IGuicePostStartup with GuicedEEClientPostStartup;
 		provides IGuiceModule with GuicedEEClientModule;
+		provides io.smallrye.mutiny.infrastructure.UniInterceptor with CallScopeUniInterceptor;
 }

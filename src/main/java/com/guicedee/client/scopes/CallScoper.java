@@ -41,7 +41,10 @@ public class CallScoper implements Scope
     {
         checkState(values.get() == null, "A scoping block is already in progress");
         values.set(Maps.<Key<?>, Object>newHashMap());
-        seed(CallScopeProperties.class, new CallScopeProperties());
+        // Seed CallScopeProperties and explicitly mark the source as Unknown on scope start
+        CallScopeProperties props = new CallScopeProperties();
+        props.setSource(CallScopeSource.Unknown);
+        seed(CallScopeProperties.class, props);
         @SuppressWarnings("rawtypes")
         Set<IOnCallScopeEnter> scopeEnters = IGuiceContext.loaderToSet(ServiceLoader.load(IOnCallScopeEnter.class));
         for (IOnCallScopeEnter<?> scopeEnter : scopeEnters)

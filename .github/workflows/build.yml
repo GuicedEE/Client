@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
 jobs:
-  GuicedInjection:
+  GuicedClient:
     uses: GuicedEE/Workflows/.github/workflows/projects.yml@master
     with:
       baseDir: ''

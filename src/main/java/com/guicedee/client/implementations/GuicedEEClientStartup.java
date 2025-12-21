@@ -3,6 +3,7 @@ package com.guicedee.client.implementations;
 import com.guicedee.client.IGuiceContext;
 import com.guicedee.client.services.lifecycle.IGuicePreStartup;
 import io.vertx.core.Future;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
@@ -28,6 +29,8 @@ public class GuicedEEClientStartup implements IGuicePreStartup<GuicedEEClientSta
 							.setAnnotationScanning(true)
 						;
 						log.debug("✅ GuicedEE scanning options configured successfully");
+						log.trace("🔄 Reloading Mutiny Uni interceptors");
+						Infrastructure.reloadUniInterceptors();
 						log.trace("✅ GuicedEE Client initialized successfully");
 				}
 				catch (Throwable T)

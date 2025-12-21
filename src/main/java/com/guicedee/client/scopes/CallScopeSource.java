@@ -2,6 +2,7 @@ package com.guicedee.client.scopes;
 
 public enum CallScopeSource
 {
+    Unknown,
     Http,
     WebSocket,
     RabbitMQ,
@@ -10,6 +11,7 @@ public enum CallScopeSource
     Transaction,
     Test,
     Rest,
+			Persistence,
     WebService,
     Startup,
     VertXConsumer,
