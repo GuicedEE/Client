@@ -24,18 +24,28 @@ public class CallScopeUniInterceptor
 		public <T> Uni<T> onUniCreation(Uni<T> uni)
 		{
 			// Avoid re-wrapping if this interceptor already produced the Uni instance
-			if (uni instanceof CallScopeAwareUni)
+			if (uni instanceof CallScopeAwareUni || INTERCEPTING.get())
 			{
 				return uni;
 			}
+			INTERCEPTING.set(true);
+			try
+			{
 				CallScoper callScoper = IGuiceContext.get(CallScoper.class);
 				if (callScoper.isStartedScope())
 				{
-						recordTouch(callScoper, "uni-creation", captureLocation());
+					recordTouch(callScoper, "uni-creation", captureLocation());
 				}
 				Map<Key<?>, Object> snapshot = captureCallScope(callScoper);
 				return new CallScopeAwareUni<>(uni, snapshot);
+			}
+			finally
+			{
+				INTERCEPTING.set(false);
+			}
 		}
+
+		private static final ThreadLocal<Boolean> INTERCEPTING = ThreadLocal.withInitial(() -> false);
 
 		private Map<Key<?>, Object> captureCallScope(CallScoper callScoper)
 		{
@@ -65,33 +75,46 @@ public class CallScopeUniInterceptor
 				@Override
 				public void subscribe(UniSubscriber<? super T> subscriber)
 				{
-						CallScoper callScoper = IGuiceContext.get(CallScoper.class);
-						boolean startedHere = false;
-
-						if (!callScoper.isStartedScope())
+						if (INTERCEPTING.get())
 						{
-								callScoper.enter();
-								startedHere = true;
-								if (!capturedValues.isEmpty())
-								{
-										callScoper.setValues(capturedValues);
-								}
-								recordTouch(callScoper, "uni-bounce", captureLocation());
+								AbstractUni.subscribe(upstream, subscriber);
+								return;
 						}
-
-						ScopedUniSubscriber<T> scopedSubscriber = new ScopedUniSubscriber<>(subscriber, callScoper, startedHere);
+						INTERCEPTING.set(true);
 						try
 						{
-								recordTouch(callScoper, startedHere ? "uni-bounce" : "uni-subscribe", captureLocation());
-								AbstractUni.subscribe(upstream, scopedSubscriber);
-						}
-						catch (Throwable t)
-						{
-								if (startedHere)
+								CallScoper callScoper = IGuiceContext.get(CallScoper.class);
+								boolean startedHere = false;
+
+								if (!callScoper.isStartedScope())
 								{
-										safeExit(callScoper);
+										callScoper.enter();
+										startedHere = true;
+										if (!capturedValues.isEmpty())
+										{
+												callScoper.setValues(capturedValues);
+										}
+										recordTouch(callScoper, "uni-bounce", captureLocation());
 								}
-								throw t;
+
+								ScopedUniSubscriber<T> scopedSubscriber = new ScopedUniSubscriber<>(subscriber, callScoper, startedHere);
+								try
+								{
+										recordTouch(callScoper, startedHere ? "uni-bounce" : "uni-subscribe", captureLocation());
+										AbstractUni.subscribe(upstream, scopedSubscriber);
+								}
+								catch (Throwable t)
+								{
+										if (startedHere)
+										{
+												safeExit(callScoper);
+										}
+										throw t;
+								}
+						}
+						finally
+						{
+								INTERCEPTING.set(false);
 						}
 				}
 		}
@@ -229,13 +252,7 @@ public class CallScopeUniInterceptor
 
 		private static String captureLocation()
 		{
-				return StackWalker
-						.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-						.walk(stream -> stream
-								.filter(f -> !f.getClassName().startsWith("io.smallrye.mutiny"))
-								.filter(f -> !f.getClassName().equals(CallScopeUniInterceptor.class.getName()))
-								.findFirst()
-								.map(f -> f.getClassName() + "#" + f.getMethodName() + ":" + f.getLineNumber())
-								.orElse("unknown"));
+			// Always return something simple to avoid StackWalker overhead and depth issues
+			return "omitted";
 		}
 }
