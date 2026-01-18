@@ -6,6 +6,9 @@ import com.guicedee.client.services.lifecycle.*;
 import com.guicedee.client.services.websocket.IWebSocketMessageReceiver;
 import com.guicedee.client.scopes.mutiny.CallScopeUniInterceptor;
 
+/**
+ * GuicedEE client module definition, exporting the client API, lifecycle hooks, scopes, and service contracts.
+ */
 module com.guicedee.client {
 		requires transitive com.google.guice;
 		requires transitive io.github.classgraph;

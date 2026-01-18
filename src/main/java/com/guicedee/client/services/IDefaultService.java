@@ -2,19 +2,19 @@ package com.guicedee.client.services;
 
 import java.util.Comparator;
 /**
- * Supplies standard set changer and comparable's for services
+ * Provides default ordering for service implementations.
  *
- * @param <J>
+ * @param <J> the service type
  */
 public interface IDefaultService<J extends IDefaultService<J>>
         extends Comparable<J>, Comparator<J> {
 
     /**
-     * Method compare ...
+     * Compares two services by {@link #sortOrder()}.
      *
-     * @param o1 of type J
-     * @param o2 of type J
-     * @return int
+     * @param o1 the first service
+     * @param o2 the second service
+     * @return the comparison result
      */
     @Override
     default int compare(J o1, J o2) {
@@ -26,19 +26,19 @@ public interface IDefaultService<J extends IDefaultService<J>>
     }
 
     /**
-     * Default Sort Order 100
+     * Returns the service sort order; lower values execute earlier.
      *
-     * @return 100
+     * @return the sort order (default 100)
      */
     default Integer sortOrder() {
         return 100;
     }
 
     /**
-     * Method compareTo ...
+     * Compares this service to another by {@link #sortOrder()}.
      *
-     * @param o of type J
-     * @return int
+     * @param o the other service
+     * @return the comparison result
      */
     @Override
     default int compareTo( J o) {

@@ -7,6 +7,9 @@ import com.google.inject.Key;
 import com.google.inject.name.Names;
 
 @SuppressWarnings("unused")
+/**
+ * Named Guice {@link Key} constants for Jackson object mapper bindings.
+ */
 public class ObjectBinderKeys
 {
 		/**
@@ -31,8 +34,7 @@ public class ObjectBinderKeys
 			*/
 		public static final Key<ObjectMapper> JavascriptObjectMapper = Key.get(ObjectMapper.class, Names.named("Javascript"));
 		/**
-			* /**
-			* The default object writer
+			* The default JavaScript object writer.
 			*/
 		public static final Key<ObjectWriter> JavaScriptObjectWriter = Key.get(ObjectWriter.class, Names.named("Javascript"));
 		/**

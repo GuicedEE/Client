@@ -3,10 +3,10 @@ package com.guicedee.client.utils;
 import java.util.Optional;
 
 /**
- * Specifies a generic pair
+ * Pair variant that exposes Optional accessors for nullable key or value.
  *
- * @param <K> Key
- * @param <V> Value
+ * @param <K> key type
+ * @param <V> value type
  */
 public class OptionalPair<K, V>
 		extends Pair<K, V> {
@@ -57,6 +57,11 @@ public class OptionalPair<K, V>
 		return this;
 	}
 
+	/**
+	 * Returns the key wrapped in an {@link Optional}.
+	 *
+	 * @return an optional key value
+	 */
 	public Optional<K> getKeyOptional() {
 		return Optional.ofNullable(getKey());
 	}

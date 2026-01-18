@@ -2,9 +2,19 @@ package com.guicedee.client;
 
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * Convenience helpers for resolving environment variables and system properties.
+ */
 @Log4j2
 public class Environment
 {
+		/**
+		 * Resolves a property from system properties or environment variables, falling back to a default.
+		 *
+		 * @param key the system property or environment variable name
+		 * @param defaultValue the value to use when neither source is set
+		 * @return the resolved value from system properties, environment variables, or the default
+		 */
 		public static String getProperty(String key, String defaultValue)
 		{
 				if (System.getProperty(key) == null)
@@ -22,14 +32,14 @@ public class Environment
 		}
 		
 		/**
-			* Returns an environment or system defined property with a default value
-			* <p>
-			* System Defined Properties (-Dxxx=xxx) override environment variables
-			*
-			* @param name         The name of the variable
-			* @param defaultValue The default value to always return
-			* @return The required value from the environment
-			*/
+		 * Returns an environment or system defined property with a default value.
+		 * <p>
+		 * System defined properties (-Dxxx=xxx) override environment variables.
+		 *
+		 * @param name the name of the variable
+		 * @param defaultValue the default value to always return
+		 * @return the required value from the environment or system properties
+		 */
 		public static String getSystemPropertyOrEnvironment(String name, String defaultValue)
 		{
 				if (System.getProperty(name) != null)

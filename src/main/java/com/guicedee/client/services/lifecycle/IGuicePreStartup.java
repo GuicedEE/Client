@@ -23,7 +23,12 @@ import io.vertx.core.Future;
 import java.util.List;
 
 /**
- * Initializes before Guice has been injected
+ * Pre-startup lifecycle hook for configuring the context before injector creation.
+ * <p>
+ * Purpose: prepare configuration and environment prior to building the injector.
+ * Trigger: invoked during Guice context bootstrap before injector creation.
+ * Order: ascending {@link #sortOrder()}, default 100.
+ * Idempotency: implementations should be safe to invoke once and tolerate repeated calls.
  *
  * @author GedMarc
  * @since 15 May 2017
@@ -34,14 +39,16 @@ public interface IGuicePreStartup<J extends IGuicePreStartup<J>>
 {
 
 	/**
-	 * Runs on startup
+	 * Executes the pre-startup logic.
+	 *
+	 * @return futures representing async startup work
 	 */
 	List<Future<Boolean>> onStartup();
 
 	/**
-	 * Sort order for startup, Default 100.
+	 * Sort order for startup, default 100.
 	 *
-	 * @return the sort order never null
+	 * @return the sort order
 	 */
 	@Override
 	default Integer sortOrder() {

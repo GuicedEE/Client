@@ -19,16 +19,18 @@ package com.guicedee.client.services;
 import com.google.inject.AbstractModule;
 
 /**
- * @param <M> The module to bind
+ * Callback for binding services into a Guice module.
+ *
+ * @param <M> the module to bind
  * @author GedMarc
  */
 @FunctionalInterface
 public interface IDefaultBinder<M extends AbstractModule> {
 
 	/**
-	 * Performs the binding with the injection module that is required
+	 * Performs the bindings using the provided module.
 	 *
-	 * @param module The module being passed in
+	 * @param module the module being configured
 	 */
 	void onBind(M module);
 

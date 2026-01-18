@@ -1,5 +1,10 @@
 package com.guicedee.client.services;
 
+/**
+ * Configuration options controlling classpath scanning and injector setup.
+ *
+ * @param <J> the concrete configuration type
+ */
 public interface IGuiceConfig<J extends IGuiceConfig<J>> {
     /**
      * Enable classpath scanning for service sets loaded via GuiceContext.getLoader()
@@ -236,23 +241,34 @@ public interface IGuiceConfig<J extends IGuiceConfig<J>> {
      */
     J setAllowPaths(boolean allowedPaths);
 
+    /**
+     * Indicates whether class visibility should be ignored during scanning.
+     *
+     * @return true when class visibility is ignored
+     */
     boolean isIgnoreClassVisibility();
 
     
+    /**
+     * Sets whether class visibility should be ignored during scanning.
+     *
+     * @param ignoreClassVisibility true to ignore class visibility
+     * @return this configuration
+     */
     J setIgnoreClassVisibility(boolean ignoreClassVisibility);
 
     /**
-     * Include module/jars from being loaded - uses ModuleInclusions for jdk9 and JarInclusions for jdk8
+     * Indicates whether module or jar inclusions should be honored when scanning.
      *
-     * @return
+     * @return true when module and jar inclusions are enabled
      */
     boolean isIncludeModuleAndJars();
 
     /**
-     * Include module/jars from being loaded - uses ModuleInclusions for jdk9 and JarInclusions for jdk8
+     * Enables module and jar inclusions for scanning (JDK 9 modules or JDK 8 jars).
      *
-     * @param includeModuleAndJars
-     * @return
+     * @param includeModuleAndJars true to include modules and jars
+     * @return this configuration
      */
     J setIncludeModuleAndJars(boolean includeModuleAndJars);
 

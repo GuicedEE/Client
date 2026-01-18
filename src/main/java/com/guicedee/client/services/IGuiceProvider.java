@@ -3,14 +3,14 @@ package com.guicedee.client.services;
 import com.guicedee.client.*;
 
 /**
- * Internal use, provides the context
+ * Provides an {@link IGuiceContext} instance for bootstrap.
  */
 public interface IGuiceProvider
 {
 	/**
-	 * Provides an instance of GuiceContext
+	 * Provides an instance of {@link IGuiceContext}.
 	 *
-	 * @return An instance of GuiceContext
+	 * @return an initialized Guice context
 	 */
 	IGuiceContext get();
 }

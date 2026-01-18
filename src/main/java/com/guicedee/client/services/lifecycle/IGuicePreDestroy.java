@@ -19,7 +19,12 @@ package com.guicedee.client.services.lifecycle;
 import com.guicedee.client.services.IDefaultService;
 
 /**
- * Initializes before Guice has been injected
+ * Pre-destroy lifecycle hook for client shutdown.
+ * <p>
+ * Purpose: release resources and stop background work before the injector is torn down.
+ * Trigger: invoked during {@link com.guicedee.client.IGuiceContext#destroy()}.
+ * Order: ascending {@link #sortOrder()}, default 100.
+ * Idempotency: implementations should be safe to invoke once and tolerate repeated calls.
  *
  * @author GedMarc
  * @since 15 May 2017
@@ -27,7 +32,7 @@ import com.guicedee.client.services.IDefaultService;
 public interface IGuicePreDestroy<J extends IGuicePreDestroy<J>> extends IDefaultService<J>
 {
 	/**
-	 * Runs on startup
+	 * Executes the pre-destroy logic.
 	 */
 	void onDestroy();
 }

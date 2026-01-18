@@ -17,12 +17,16 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.JsonLayout;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.core.Appender;
 
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Logging helpers for configuring Log4j2 appenders in client applications.
+ */
 public class LogUtils
 {
     private static final Set<String> names = new HashSet<>();
@@ -185,6 +189,12 @@ public class LogUtils
         config.getRootLogger().addAppender(consoleAppender, level == null ? Level.DEBUG : level, null);
     }
 
+    /**
+     * Adds a rolling file logger for the given name and base directory.
+     *
+     * @param name the logger name and base file name
+     * @param baseLogFolder the base directory for log files; defaults to {@code logs}
+     */
     public static void addFileRollingLogger(String name, String baseLogFolder)
     {
         if (names.contains(name))
@@ -231,6 +241,11 @@ public class LogUtils
         config.getRootLogger().addAppender(rollingFileAppender, Level.DEBUG, null);
     }
 
+    /**
+     * Adds a rolling file logger using a minimal configuration and default log directory.
+     *
+     * @param name the logger name and base file name
+     */
     public static void addMinimalFileRollingLogger(String name)
     {
         if (names.contains(name))
@@ -278,7 +293,16 @@ public class LogUtils
     }
 
 
-    public static Logger getSpecificRollingLogger(String name, String baseLogFolder, String pattern,boolean logToRoot)
+    /**
+     * Creates or returns a logger with a dedicated rolling file appender.
+     *
+     * @param name the logger name and base file name
+     * @param baseLogFolder the base directory for log files; defaults to {@code logs}
+     * @param pattern an optional Log4j2 pattern layout
+     * @param logToRoot whether this logger should be additive to the root logger
+     * @return the configured logger instance
+     */
+    public static Logger getSpecificRollingLogger(String name, String baseLogFolder, String pattern, boolean logToRoot)
     {
         LoggerContext context = (LoggerContext) LogManager.getContext(false); // Don't reinitialize
         if (names.contains(name))
@@ -343,5 +367,20 @@ public class LogUtils
         config.addLogger(name, specificLoggerConfig);
 
         return context.getLogger(name);
+    }
+
+    /**
+     * Programmatically adds an appender to the root logger.
+     *
+     * @param appender The appender to add.
+     * @param level    The level to use for the appender.
+     */
+    public static void addAppender(Appender appender, Level level)
+    {
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+        appender.start();
+        config.addAppender(appender);
+        config.getRootLogger().addAppender(appender, level == null ? Level.DEBUG : level, null);
     }
 }

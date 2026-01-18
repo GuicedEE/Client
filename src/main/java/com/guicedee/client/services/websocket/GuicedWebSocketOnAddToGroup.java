@@ -5,11 +5,20 @@ import com.guicedee.client.services.IDefaultService;
 import java.util.concurrent.CompletableFuture;
 
 @FunctionalInterface
+/**
+ * Hook invoked when a connection joins a WebSocket group.
+ * <p>
+ * Purpose: react to group membership changes.
+ * Trigger: invoked on group join.
+ * Order: ascending {@link #sortOrder()}, default 100.
+ * Idempotency: implementations should tolerate repeated joins.
+ */
 public interface GuicedWebSocketOnAddToGroup<J extends GuicedWebSocketOnAddToGroup<J>> extends IDefaultService<J> {
     /**
-     * Returns true if the process is already complete
-     * @param groupName
-     * @return
+     * Handles group join events.
+     *
+     * @param groupName the group being joined
+     * @return a future indicating completion
      */
     CompletableFuture<Boolean> onAddToGroup(String groupName);
 }

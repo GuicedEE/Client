@@ -3,15 +3,20 @@ package com.guicedee.client.services.lifecycle;
 import com.guicedee.client.services.IGuiceConfig;
 
 /**
- * Service Locator Interface for granular configuration of the GuiceContext and Injector
+ * Configuration hook for customizing {@link IGuiceConfig} before injector creation.
+ * <p>
+ * Purpose: mutate configuration for scanning and injector behavior.
+ * Trigger: invoked during context bootstrap before injector build.
+ * Order: determined by the caller or service loader ordering.
+ * Idempotency: implementations should avoid side effects beyond config mutation.
  */
 @FunctionalInterface
 public interface IGuiceConfigurator {
     /**
-     * Configuers the guice instance
+     * Configures the Guice context.
      *
-     * @param config The configuration object coming in
-     * @return The required guice configuration
+     * @param config the configuration object to mutate
+     * @return the configured Guice configuration
      */
     IGuiceConfig<?> configure(IGuiceConfig<?> config);
 

@@ -4,11 +4,20 @@ import com.guicedee.client.services.IDefaultService;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Hook invoked when a connection leaves a WebSocket group.
+ * <p>
+ * Purpose: react to group membership removal.
+ * Trigger: invoked on group leave.
+ * Order: ascending {@link #sortOrder()}, default 100.
+ * Idempotency: implementations should tolerate repeated removals.
+ */
 public interface GuicedWebSocketOnRemoveFromGroup<J extends GuicedWebSocketOnRemoveFromGroup<J>>  extends IDefaultService<J> {
     /**
-     * Returns true if the action was already taken
-     * @param groupName
-     * @return
+     * Handles group leave events.
+     *
+     * @param groupName the group being left
+     * @return a future indicating completion
      */
     CompletableFuture<Boolean> onRemoveFromGroup(String groupName);
 }

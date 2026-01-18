@@ -8,9 +8,22 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
 
+/**
+ * Pre-startup hook that configures scanning defaults and reloads Mutiny interceptors.
+ * <p>
+ * Purpose: ensure the client context has sensible scanning defaults and Mutiny interceptors are active.
+ * Trigger: executed during {@link com.guicedee.client.services.lifecycle.IGuicePreStartup#onStartup()}.
+ * Order: {@link #sortOrder()} returns the earliest possible priority.
+ * Idempotency: safe to run once; repeated runs reapply configuration and reload interceptors.
+ */
 @Log4j2
 public class GuicedEEClientStartup implements IGuicePreStartup<GuicedEEClientStartup>
 {
+		/**
+		 * Configures the GuicedEE client scanning defaults and reloads Mutiny interceptors.
+		 *
+		 * @return a completed future indicating startup success
+		 */
 		@Override
 		public List<Future<Boolean>> onStartup()
 		{
@@ -42,6 +55,11 @@ public class GuicedEEClientStartup implements IGuicePreStartup<GuicedEEClientSta
 				return List.of(Future.succeededFuture(true));
 		}
 		
+		/**
+		 * Ensures this startup hook runs before other services.
+		 *
+		 * @return the sort order
+		 */
 		@Override
 		public Integer sortOrder()
 		{

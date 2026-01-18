@@ -32,14 +32,13 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 /**
-	* A pretty class for containing EAR or Container level global properties.
-	* <p>
-	* Key to Map ID to Property
-	*
-	* @author GedMarc
-	* @since 08 Jul 2017
-	*/
-@SuppressWarnings("MissingClassJavaDoc")
+ * Container for application-wide properties keyed by a named group and property key.
+ * <p>
+ * Intended for sharing configuration across modules while still allowing type-safe retrieval.
+ *
+ * @author GedMarc
+ * @since 08 Jul 2017
+ */
 @Singleton
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
 @JsonInclude(NON_NULL)

@@ -16,14 +16,36 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Central access point for the GuicedEE client injector, configuration, and lifecycle loading.
+ * <p>
+ * Provides static helpers for bootstrap, service loading, and scoped injection while exposing
+ * instance-level hooks for lifecycle coordination.
+ */
 public interface IGuiceContext
 {
-
+		/**
+		 * Registered Guice contexts keyed by name (typically "default").
+		 */
 		Map<String, IGuiceContext> contexts = new HashMap<>();
+		/**
+		 * Module names registered for scanning when filtering is enabled.
+		 */
 		Set<String> registerModuleForScanning = new LinkedHashSet<>();
+		/**
+		 * Additional Guice modules to include during injector creation.
+		 */
 		List<com.google.inject.Module> modules = new ArrayList<>();
+		/**
+		 * Cache of loaded service types and their resolved implementations.
+		 */
 		Map<Class, Set> allLoadedServices = new LinkedHashMap<>();
 		
+		/**
+		 * Returns the default Guice context, initializing it via {@link ServiceLoader} if needed.
+		 *
+		 * @return the default {@link IGuiceContext}
+		 */
 		static IGuiceContext getContext()
 		{
 				System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
@@ -50,6 +72,11 @@ public interface IGuiceContext
 				return out;
 		}
 		
+		/**
+		 * Alias for {@link #getContext()}.
+		 *
+		 * @return the default {@link IGuiceContext}
+		 */
 		static IGuiceContext instance()
 		{
 				IGuiceContext context = getContext();
@@ -57,20 +84,50 @@ public interface IGuiceContext
 				return context;
 		}
 		
+		/**
+		 * Returns the shared cache of loaded service types.
+		 *
+		 * @return the loaded service cache
+		 */
 		static Map<Class, Set> getAllLoadedServices()
 		{
 				////LogManager.getLogger(IGuiceContext.class).trace("📋 Getting all loaded services");
 				return allLoadedServices;
 		}
 		
+		/**
+		 * Returns a future completed when the injector loading process finishes.
+		 *
+		 * @return the loading completion future
+		 */
 		Future<Void> getLoadingFinished();
 		
+		/**
+		 * Returns the Guice injector for this context.
+		 *
+		 * @return the injector
+		 */
 		Injector inject();
 		
+		/**
+		 * Returns the Guice configuration backing this context.
+		 *
+		 * @return the configuration
+		 */
 		IGuiceConfig<?> getConfig();
 		
+		/**
+		 * Shuts down the context and releases resources.
+		 */
 		void destroy();
 		
+		/**
+		 * Resolves an instance from the injector, optionally constructing and member-injecting entities.
+		 *
+		 * @param type the Guice key to resolve
+		 * @param <T> the resolved type
+		 * @return the resolved instance
+		 */
 		static <T> T get(Key<T> type)
 		{
 				////LogManager.getLogger(IGuiceContext.class).trace("📋 Getting instance for type: {}", type);
@@ -155,15 +212,37 @@ public interface IGuiceContext
 				return get(Key.get(type, annotation));
 		}
 		
+		/**
+		 * Resolves an instance from the injector using the default binding.
+		 *
+		 * @param type the requested type
+		 * @param <T> the resolved type
+		 * @return the resolved instance
+		 */
 		static <T> T get(Class<T> type)
 		{
 				return get(type, null);
 		}
 		
+		/**
+		 * Returns the classpath scan result associated with this context.
+		 *
+		 * @return the scan result
+		 */
 		ScanResult getScanResult();
 		
+		/**
+		 * Cache of service loader type names to resolved implementation classes.
+		 */
 		Map<String, Set<Class>> loaderClasses = new ConcurrentHashMap<>();
 		
+		/**
+		 * Loads service implementations into a sorted set, optionally scanning the classpath.
+		 *
+		 * @param loader the service loader to enumerate
+		 * @param <T> the service type
+		 * @return a sorted set of injected service instances
+		 */
 		static <T extends Comparable<T>> Set<T> loaderToSet(ServiceLoader<T> loader)
 		{
 				////LogManager.getLogger(IGuiceContext.class).trace("📋 Loading service set for: {}", loader);
@@ -226,6 +305,13 @@ public interface IGuiceContext
 				return outcomes;
 		}
 		
+		/**
+		 * Loads service implementations without member injection.
+		 *
+		 * @param loader the service loader to enumerate
+		 * @param <T> the service type
+		 * @return a set of instantiated services
+		 */
 		static <T> Set<T> loaderToSetNoInjection(ServiceLoader<T> loader)
 		{
 				////LogManager.getLogger(IGuiceContext.class).trace("📋 Loading service set without injection for: {}", loader);
@@ -283,6 +369,13 @@ public interface IGuiceContext
 				return output;
 		}
 		
+		/**
+		 * Loads the implementation classes for a service loader without instantiating them.
+		 *
+		 * @param loader the service loader to enumerate
+		 * @param <T> the service type
+		 * @return the set of implementation classes
+		 */
 		static <T extends Comparable<T>> Set<Class<T>> loadClassSet(ServiceLoader<T> loader)
 		{
 				////LogManager.getLogger(IGuiceContext.class).trace("📋 Loading class set for service: {}", loader);
@@ -352,18 +445,39 @@ public interface IGuiceContext
 				return result;
 		}
 		
+		/**
+		 * Loads services through the provided loader and injects them if required by the context.
+		 *
+		 * @param loaderType the service type
+		 * @param serviceLoader the backing service loader
+		 * @param <T> the service type
+		 * @return a set of loaded service instances
+		 */
 		<T extends Comparable<T>> Set<T> getLoader(Class<T> loaderType, ServiceLoader<T> serviceLoader);
 		
+		/**
+		 * Loads services with optional injection suppression.
+		 *
+		 * @param loaderType the service type
+		 * @param dontInject when true, bypasses injector member injection
+		 * @param serviceLoader the backing service loader
+		 * @param <T> the service type
+		 * @return a set of loaded service instances
+		 */
 		<T> Set<T> getLoader(Class<T> loaderType, @SuppressWarnings("unused") boolean dontInject, ServiceLoader<T> serviceLoader);
 		
+		/**
+		 * Indicates whether the injector is currently being built.
+		 *
+		 * @return true when injector creation is in progress
+		 */
 		boolean isBuildingInjector();
 		
 		/**
-			* Registers a module for scanning when filtering is enabled
-			*
-			* @param javaModuleName The name in the module-info.java file
-			* @return This instance
-			*/
+		 * Registers a Java module for scanning when filtering is enabled.
+		 *
+		 * @param javaModuleName the module name from {@code module-info.java}
+		 */
 		@SuppressWarnings("unchecked")
 		static void registerModule(String javaModuleName)
 		{
@@ -378,10 +492,10 @@ public interface IGuiceContext
 		}
 		
 		/**
-			* Adds a guice module to the injector for processing
-			*
-			* @param module The Guice module to register
-			*/
+		 * Adds a Guice module to the injector for processing.
+		 *
+		 * @param module the Guice module to register
+		 */
 		static void registerModule(com.google.inject.Module module)
 		{
 			/*	//LogManager.getLogger(IGuiceContext.class).info("🚀 Registering Guice module: '{}'",
@@ -395,7 +509,17 @@ public interface IGuiceContext
 															.getName());*/
 		}
 		
-  Set<IGuicePreDestroy> loadPreDestroyServices();
+		/**
+		 * Loads pre-destroy lifecycle services in call order.
+		 *
+		 * @return the pre-destroy service set
+		 */
+		Set<IGuicePreDestroy> loadPreDestroyServices();
 		
+		/**
+		 * Loads pre-startup lifecycle services in call order.
+		 *
+		 * @return the pre-startup service set
+		 */
 		Set<IGuicePreStartup> loadPreStartupServices();
 }

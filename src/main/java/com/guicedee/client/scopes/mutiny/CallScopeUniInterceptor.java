@@ -15,11 +15,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Mutiny {@link UniInterceptor} that propagates {@link com.guicedee.client.scopes.CallScope} state.
+ * <p>
+ * Captures the current call scope on Uni creation and restores it on subscription.
+ */
 public class CallScopeUniInterceptor
 		implements UniInterceptor
 {
 		private static final Key<CallScopeProperties> CALL_SCOPE_PROPERTIES_KEY = Key.get(CallScopeProperties.class);
 
+		/**
+		 * Wraps newly created {@link Uni} instances to carry call scope values across async boundaries.
+		 *
+		 * @param uni the created Uni
+		 * @param <T> the item type
+		 * @return a Uni with call scope propagation
+		 */
 		@Override
 		public <T> Uni<T> onUniCreation(Uni<T> uni)
 		{
@@ -47,6 +59,12 @@ public class CallScopeUniInterceptor
 
 		private static final ThreadLocal<Boolean> INTERCEPTING = ThreadLocal.withInitial(() -> false);
 
+		/**
+		 * Captures the scoped values from the active call scope.
+		 *
+		 * @param callScoper the call scoper to read from
+		 * @return a snapshot of scoped values, or an empty map
+		 */
 		private Map<Key<?>, Object> captureCallScope(CallScoper callScoper)
 		{
 				if (!callScoper.isStartedScope())
@@ -61,6 +79,9 @@ public class CallScopeUniInterceptor
 				return new HashMap<>(values);
 		}
 
+		/**
+		 * Uni wrapper that restores call scope values at subscription time.
+		 */
 		private static final class CallScopeAwareUni<T> extends AbstractUni<T>
 		{
 				private final Uni<T> upstream;
@@ -72,6 +93,11 @@ public class CallScopeUniInterceptor
 						this.capturedValues = capturedValues.isEmpty() ? Collections.emptyMap() : capturedValues;
 				}
 
+				/**
+				 * Subscribes while ensuring call scope values are available for the subscription.
+				 *
+				 * @param subscriber the downstream subscriber
+				 */
 				@Override
 				public void subscribe(UniSubscriber<? super T> subscriber)
 				{
@@ -119,6 +145,9 @@ public class CallScopeUniInterceptor
 				}
 		}
 
+		/**
+		 * Subscriber wrapper that ends the call scope after completion or failure.
+		 */
 		private static final class ScopedUniSubscriber<T> implements UniSubscriber<T>
 		{
 				private final UniSubscriber<? super T> delegate;
@@ -133,6 +162,11 @@ public class CallScopeUniInterceptor
 						this.startedScope = startedScope;
 				}
 
+				/**
+				 * Wraps the subscription to close the scope on cancel.
+				 *
+				 * @param subscription the upstream subscription
+				 */
 				@Override
 				public void onSubscribe(UniSubscription subscription)
 				{
@@ -148,6 +182,11 @@ public class CallScopeUniInterceptor
 						}
 				}
 
+				/**
+				 * Delegates the item and then closes the scope if it was started locally.
+				 *
+				 * @param item the item produced
+				 */
 				@Override
 				public void onItem(T item)
 				{
@@ -161,6 +200,11 @@ public class CallScopeUniInterceptor
 						}
 				}
 
+				/**
+				 * Delegates the failure and then closes the scope if it was started locally.
+				 *
+				 * @param failure the failure produced
+				 */
 				@Override
 				public void onFailure(Throwable failure)
 				{
@@ -174,6 +218,9 @@ public class CallScopeUniInterceptor
 						}
 				}
 
+				/**
+				 * Ensures scope exit occurs at most once for this subscription.
+				 */
 				private void endScope()
 				{
 						if (startedScope && ended.compareAndSet(false, true))
@@ -183,6 +230,9 @@ public class CallScopeUniInterceptor
 				}
 		}
 
+		/**
+		 * Subscription wrapper that invokes a callback on cancel.
+		 */
 		private static final class ScopedUniSubscription implements UniSubscription
 		{
 				private final UniSubscription delegate;
@@ -194,12 +244,20 @@ public class CallScopeUniInterceptor
 						this.onCancel = onCancel;
 				}
 
+				/**
+				 * Delegates demand to the upstream subscription.
+				 *
+				 * @param n the requested demand
+				 */
 				@Override
 				public void request(long n)
 				{
 						delegate.request(n);
 				}
 
+				/**
+				 * Cancels the upstream subscription and triggers the scope cleanup callback.
+				 */
 				@Override
 				public void cancel()
 				{
@@ -214,6 +272,11 @@ public class CallScopeUniInterceptor
 				}
 		}
 
+		/**
+		 * Attempts to exit the call scope while ignoring state errors.
+		 *
+		 * @param callScoper the scoper to exit
+		 */
 		private static void safeExit(CallScoper callScoper)
 		{
 				try
@@ -226,6 +289,13 @@ public class CallScopeUniInterceptor
 				}
 		}
 
+		/**
+		 * Records a touch into {@link CallScopeProperties} when available.
+		 *
+		 * @param callScoper the scoper containing the properties
+		 * @param reason the reason identifier
+		 * @param location the origin marker
+		 */
 		private static void recordTouch(CallScoper callScoper, String reason, String location)
 		{
 				CallScopeProperties properties = getCallScopeProperties(callScoper);
@@ -235,6 +305,12 @@ public class CallScopeUniInterceptor
 				}
 		}
 
+		/**
+		 * Resolves the call scope properties from the current scoped values.
+		 *
+		 * @param callScoper the scoper to inspect
+		 * @return the properties or null if unavailable
+		 */
 		private static CallScopeProperties getCallScopeProperties(CallScoper callScoper)
 		{
 				Map<Key<?>, Object> values = callScoper.getValues();
@@ -250,6 +326,11 @@ public class CallScopeUniInterceptor
 				return null;
 		}
 
+		/**
+		 * Captures a lightweight diagnostic location marker.
+		 *
+		 * @return a constant location marker
+		 */
 		private static String captureLocation()
 		{
 			// Always return something simple to avoid StackWalker overhead and depth issues

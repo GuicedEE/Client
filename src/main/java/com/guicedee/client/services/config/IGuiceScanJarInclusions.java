@@ -5,18 +5,18 @@ import com.guicedee.client.services.IDefaultService;
 import java.util.Set;
 
 /**
- * Marks JAR files referenced from libraries to be excluded from all scans
+ * Supplies jar names to include when scanning.
  */
 @FunctionalInterface
 public interface IGuiceScanJarInclusions<J extends IGuiceScanJarInclusions<J>>
 		extends IDefaultService<J>
 {
 	/**
-	 * Excludes the given jars for scanning
+	 * Returns the jar names to include in scanning.
 	 *
-	 * @return
+	 * @return the included jar names
 	 */
-	 Set<String> includeJars();
+	Set<String> includeJars();
 
 
 }

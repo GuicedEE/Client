@@ -3,8 +3,8 @@ package com.guicedee.client.annotations;
 import java.lang.annotation.*;
 
 /**
-	* Marker interface to identify if the class is not injectable
-	*/
+ * Marks a type as not eligible for member injection when resolved via {@link com.guicedee.client.IGuiceContext}.
+ */
 
 @Target(
 	{

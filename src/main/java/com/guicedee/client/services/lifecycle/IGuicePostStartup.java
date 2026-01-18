@@ -26,7 +26,12 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * Executes immediately after Guice has been initialized
+ * Post-startup lifecycle hook executed after the injector is ready.
+ * <p>
+ * Purpose: run initialization that depends on injected services.
+ * Trigger: invoked immediately after injector creation.
+ * Order: ascending {@link #sortOrder()}, default 50.
+ * Idempotency: implementations should be safe to invoke once and tolerate repeated calls.
  *
  * @author GedMarc
  * @since 15 May 2017
@@ -35,10 +40,19 @@ public interface IGuicePostStartup<J extends IGuicePostStartup<J>>
         extends IDefaultService<J>
 {
     /**
-     * Runs immediately after the post load
+     * Executes the post-startup logic.
+     *
+     * @return futures representing async startup work
      */
     List<Future<Boolean>> postLoad();
 
+    /**
+     * Executes a callable on the shared worker pool and returns its future.
+     *
+     * @param callable the work to execute
+     * @param grouped whether the execution should be grouped
+     * @return a future for the execution result
+     */
     default Future<Boolean> executeSingle(Callable<Boolean> callable, boolean grouped)
     {
         Promise<Boolean> promise = Promise.promise();
@@ -47,6 +61,13 @@ public interface IGuicePostStartup<J extends IGuicePostStartup<J>>
         return promise.future();
     }
 
+    /**
+     * Executes a callable using a shared worker executor.
+     *
+     * @param callable the work to execute
+     * @param grouped whether the execution should be grouped
+     * @return a future for the execution result
+     */
     default Future<Boolean> execute(Callable<Boolean> callable, boolean grouped)
     {
         Promise<Boolean> promise = Promise.promise();
@@ -59,7 +80,7 @@ public interface IGuicePostStartup<J extends IGuicePostStartup<J>>
     }
 
     /**
-     * Sets the order in which this must run, default 100.
+     * Sets the order in which this must run, default 50.
      *
      * @return the sort order to return
      */
@@ -69,6 +90,11 @@ public interface IGuicePostStartup<J extends IGuicePostStartup<J>>
         return 50;
     }
 
+    /**
+     * Returns the Vert.x instance from the Guice context.
+     *
+     * @return the Vertx instance
+     */
     default Vertx getVertx()
     {
         return IGuiceContext.get(Vertx.class);

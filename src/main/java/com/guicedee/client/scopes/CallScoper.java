@@ -14,6 +14,11 @@ import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.checkState;
 
+/**
+ * Guice {@link Scope} implementation that manages a per-call thread-local scope.
+ * <p>
+ * Entering a scope seeds {@link CallScopeProperties} and triggers lifecycle callbacks.
+ */
 @Singleton
 public class CallScoper implements Scope
 {
@@ -32,11 +37,19 @@ public class CallScoper implements Scope
     private static final ThreadLocal<Map<Key<?>, Object>> values
             = new ThreadLocal<Map<Key<?>, Object>>();
 
+    /**
+     * Indicates whether the current thread has an active call scope.
+     *
+     * @return true when a scope is active
+     */
     public boolean isStartedScope()
     {
         return values.get() != null;
     }
 
+    /**
+     * Enters a new call scope for the current thread and notifies enter listeners.
+     */
     public void enter()
     {
         checkState(values.get() == null, "A scoping block is already in progress");
@@ -61,16 +74,29 @@ public class CallScoper implements Scope
         }
     }
 
+    /**
+     * Returns the map of scoped values for the current thread.
+     *
+     * @return the scoped values, or null if no scope exists
+     */
     public Map<Key<?>, Object> getValues()
     {
         return values.get();
     }
 
+    /**
+     * Copies the provided scoped values into the current scope.
+     *
+     * @param values the values to merge into this scope
+     */
     public void setValues(Map<Key<?>, Object> values)
     {
         this.values.get().putAll(values);
     }
 
+    /**
+     * Exits the current call scope and notifies exit listeners.
+     */
     public void exit()
     {
         checkState(values.get() != null, "No scoping block in progress");
@@ -90,6 +116,13 @@ public class CallScoper implements Scope
         values.remove();
     }
 
+    /**
+     * Seeds a value into the current scope under the given key.
+     *
+     * @param key the scope key
+     * @param value the value to seed
+     * @param <T> the value type
+     */
     public <T> void seed(Key<T> key, T value)
     {
         Map<Key<?>, Object> scopedObjects = getScopedObjectMap(key);
@@ -99,11 +132,26 @@ public class CallScoper implements Scope
         scopedObjects.put(key, value);
     }
 
+    /**
+     * Seeds a value into the current scope using a class key.
+     *
+     * @param clazz the scope key class
+     * @param value the value to seed
+     * @param <T> the value type
+     */
     public <T> void seed(Class<T> clazz, T value)
     {
         seed(Key.get(clazz), value);
     }
 
+    /**
+     * Returns a provider that respects call scope and caches scoped instances.
+     *
+     * @param key the scope key
+     * @param unscoped the unscoped provider
+     * @param <T> the value type
+     * @return a scoped provider
+     */
     public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscoped)
     {
         return new Provider<T>()
@@ -143,10 +191,10 @@ public class CallScoper implements Scope
     }
 
     /**
-     * Returns a provider that always throws exception complaining that the object
-     * in question must be seeded before it can be injected.
+     * Returns a provider that always throws an exception when used, indicating the key must be seeded.
      *
-     * @return typed provider
+     * @param <T> the value type
+     * @return a provider that throws when accessed
      */
     @SuppressWarnings({"unchecked"})
     public static <T> Provider<T> seededKeyProvider()

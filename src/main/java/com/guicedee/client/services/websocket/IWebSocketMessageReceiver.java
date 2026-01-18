@@ -5,26 +5,24 @@ import com.guicedee.client.services.IDefaultService;
 import java.util.Set;
 
 /**
- * Registers receivers for web socket messages
+ * Registers receivers for WebSocket messages.
  */
 public interface IWebSocketMessageReceiver<R,J extends IWebSocketMessageReceiver<R,J>>
 		extends IDefaultService<J>
 {
 	/**
-	 * Returns a unique list of names that this applies for
+	 * Returns the message names handled by this receiver.
 	 *
-	 * @return
+	 * @return the set of message names
 	 */
 	Set<String> messageNames();
 
 	/**
-	 * Receives a message on the web socket to a specific designated name registered on GuicedWebSocket
+	 * Receives a WebSocket message routed by {@link IGuicedWebSocket}.
 	 *
-	 * @param message
-	 * 		The message if required
-	 *
-	 * @throws java.lang.SecurityException
-	 * 		if any consumer decides the connection is not valid
+	 * @param message the incoming message payload
+	 * @return the response payload as a Uni
+	 * @throws SecurityException if the connection is not valid
 	 */
 	io.smallrye.mutiny.Uni<R> receiveMessage(WebSocketMessageReceiver<?> message) throws SecurityException;
 }

@@ -1,15 +1,15 @@
 package com.guicedee.client.services;
 
 /**
- * Defines an instance as being able to be switched off if need be
+ * Defines a service that can be enabled or disabled at runtime.
  */
 @SuppressWarnings("unused")
 @FunctionalInterface
 public interface IServiceEnablement<J extends IServiceEnablement<J>> {
 	/**
-	 * If this page configurator is enabled
+	 * Indicates whether the service should run.
 	 *
-	 * @return if the configuration must run
+	 * @return true when the service is enabled
 	 */
 	boolean enabled();
 

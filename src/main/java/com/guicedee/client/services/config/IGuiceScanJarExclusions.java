@@ -12,11 +12,11 @@ public interface IGuiceScanJarExclusions<J extends IGuiceScanJarExclusions<J>>
 		extends IDefaultService<J>
 {
 	/**
-	 * Excludes the given jars for scanning
+	 * Returns the jar names to exclude from scanning.
 	 *
-	 * @return
+	 * @return the excluded jar names
 	 */
-	 Set<String> excludeJars();
+	Set<String> excludeJars();
 
 
 }

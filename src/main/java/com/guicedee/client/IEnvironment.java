@@ -3,24 +3,30 @@ package com.guicedee.client;
 import java.util.Map;
 
 /**
-	* A definition of an environment
-	*
-	* @param <J>
-	*/
+ * Defines a named environment backed by an enum with optional properties.
+ *
+ * @param <J> the concrete enum type
+ */
 public interface IEnvironment<J extends Enum<J> & IEnvironment<J>>
 {
 		/**
-			* @return A name of an environment
+			* Returns the environment name (typically the enum constant name).
+		 *
+		 * @return the environment name
 			*/
 		String name();
 		
 		/**
-			* @return The ordinal of the enum
+			* Returns the enum ordinal for ordering or persistence.
+		 *
+		 * @return the ordinal value
 			*/
 		int ordinal();
 		
 		/**
-			* @return Any properties that are programmatically required through an enum
+			* Provides configuration properties associated with this environment.
+		 *
+		 * @return a map of environment properties
 			*/
 		Map<String, Object> properties();
 }

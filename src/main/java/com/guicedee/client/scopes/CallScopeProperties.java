@@ -11,6 +11,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Mutable properties carried across a {@link CallScope}.
+ * <p>
+ * Used to record scope provenance, additional metadata, and diagnostic touches.
+ */
 @CallScope
 @Getter
 @Setter
