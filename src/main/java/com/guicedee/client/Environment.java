@@ -21,7 +21,7 @@ public class Environment
 				{
 						if (System.getenv(key) == null)
 						{
-								System.setProperty(key, defaultValue);
+								System.setProperty(key, resolvePlaceholders(defaultValue));
 						}
 						else
 						{
@@ -30,7 +30,7 @@ public class Environment
 				}
 				return System.getProperty(key);
 		}
-		
+
 		/**
 		 * Returns an environment or system defined property with a default value.
 		 * <p>
@@ -60,25 +60,153 @@ public class Environment
 								return System.getenv(name);
 						}
 				}
+				String envName = name.toUpperCase().replace('.', '_').replace('-', '_');
+				if (System.getenv(envName) != null)
+				{
+						try
+						{
+								System.setProperty(name, System.getenv(envName));
+								return System.getProperty(name);
+						}
+						catch (Exception T)
+						{
+								log.debug("⚠️ Couldn't set system property value from environment - Name: '{}', EnvName: '{}', Default: '{}'",
+										name, envName, defaultValue, T);
+								return System.getenv(envName);
+						}
+				}
 				else
 				{
 						if (defaultValue == null)
 						{
 								return "";
 						}
-						log.debug("📋 Using default value for property - Name: '{}', Value: '{}'", name, defaultValue);
+						String resolvedDefault = resolvePlaceholders(defaultValue);
+						log.debug("📋 Using default value for property - Name: '{}', Value: '{}'", name, resolvedDefault);
 						try
 						{
-								System.setProperty(name, defaultValue);
+								System.setProperty(name, resolvedDefault);
 								return System.getProperty(name);
 						}
 						catch (Exception T)
 						{
 								log.debug("⚠️ Couldn't set system property to default value - Name: '{}', Value: '{}'",
-																		name, defaultValue, T);
-								return defaultValue;
+																		name, resolvedDefault, T);
+								return resolvedDefault;
 						}
 				}
+		}
+
+		/**
+		 * Resolves placeholders in the form of ${env.VAR:-default} or ${VAR:-default} or ${VAR}.
+		 *
+		 * @param value The value containing placeholders.
+		 * @return The resolved value.
+		 */
+		public static String resolvePlaceholders(String value)
+		{
+				if (value == null || !value.contains("${"))
+				{
+						return value;
+				}
+
+				String previous;
+				String current = value;
+				int iterations = 0;
+				do
+				{
+						previous = current;
+						current = resolvePlaceholdersOnce(current);
+						iterations++;
+				} while (!current.equals(previous) && iterations < 10); // Limit recursion to 10 levels
+
+				return current;
+		}
+
+		private static String resolvePlaceholdersOnce(String value)
+		{
+				if (value == null || !value.contains("${"))
+				{
+						return value;
+				}
+
+				StringBuilder result = new StringBuilder();
+				int lastPos = 0;
+				int start = value.indexOf("${");
+
+				while (start != -1)
+				{
+						result.append(value, lastPos, start);
+						int end = findMatchingEnd(value, start);
+						if (end == -1)
+						{
+								break;
+						}
+
+						String placeholder = value.substring(start + 2, end);
+						String defaultValue = null;
+
+						int defaultIdx = placeholder.indexOf(":-");
+						if (defaultIdx != -1)
+						{
+								defaultValue = placeholder.substring(defaultIdx + 2);
+								placeholder = placeholder.substring(0, defaultIdx);
+						}
+
+						if (placeholder.startsWith("env."))
+						{
+								placeholder = placeholder.substring(4);
+						}
+
+						String resolvedValue = getRawSystemPropertyOrEnvironment(placeholder);
+						if (resolvedValue == null || resolvedValue.isEmpty())
+						{
+								resolvedValue = defaultValue != null ? defaultValue : "${" + placeholder + "}";
+						}
+
+						result.append(resolvedValue);
+						lastPos = end + 1;
+						start = value.indexOf("${", lastPos);
+				}
+
+				result.append(value.substring(lastPos));
+				return result.toString();
+		}
+
+		private static int findMatchingEnd(String value, int start)
+		{
+				int depth = 0;
+				for (int i = start; i < value.length(); i++)
+				{
+						if (value.startsWith("${", i))
+						{
+								depth++;
+								i++; // skip {
+						}
+						else if (value.charAt(i) == '}')
+						{
+								depth--;
+								if (depth == 0)
+								{
+										return i;
+								}
+						}
+				}
+				return -1;
+		}
+
+		private static String getRawSystemPropertyOrEnvironment(String name)
+		{
+				if (System.getProperty(name) != null)
+				{
+						return System.getProperty(name);
+				}
+				if (System.getenv(name) != null)
+				{
+						return System.getenv(name);
+				}
+				String envName = name.toUpperCase().replace('.', '_').replace('-', '_');
+				return System.getenv(envName);
 		}
 		
 }

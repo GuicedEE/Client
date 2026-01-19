@@ -41,7 +41,7 @@ public class LogUtils
         }
         catch (Throwable t)
         {
-            v = System.getProperty("CLOUD", System.getenv().getOrDefault("CLOUD", "false"));
+            v = "false";
         }
         if (v == null)
             return false;
