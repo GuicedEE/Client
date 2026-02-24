@@ -63,5 +63,5 @@ module com.guicedee.client {
 		provides IGuicePreStartup with GuicedEEClientStartup;
 		provides IGuicePostStartup with GuicedEEClientPostStartup;
 		provides IGuiceModule with GuicedEEClientModule;
-		provides io.smallrye.mutiny.infrastructure.UniInterceptor with CallScopeUniInterceptor;
+		//provides io.smallrye.mutiny.infrastructure.UniInterceptor with CallScopeUniInterceptor;
 }
