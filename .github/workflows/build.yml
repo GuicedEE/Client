@@ -1,6 +1,11 @@
 name: GuicedEE Client Library
 on:
   workflow_dispatch:
+    inputs:
+      centralRelease:
+        type: boolean
+        description: Run a release to maven central
+        default: false
   push:
 jobs:
   GuicedClient:
@@ -10,4 +15,5 @@ jobs:
       name: 'Guiced Client'
       sonarProjectName: 'GuicedEE_Client'
       sonarOrganization: 'guicedee'
+      publishToCentral: ${{inputs.centralRelease}}
     secrets: inherit
