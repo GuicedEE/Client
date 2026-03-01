@@ -1,4 +1,4 @@
-name: Maven Package
+name: GuicedEE Client Library
 on:
   workflow_dispatch:
   push:
