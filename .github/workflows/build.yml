@@ -8,4 +8,5 @@ jobs:
     with:
       baseDir: ''
       name: 'Guiced Client'
+      sonarProjectName: 'GuicedEE_Client'
     secrets: inherit
