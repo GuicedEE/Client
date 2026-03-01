@@ -53,7 +53,7 @@ public class CallScopeUniInterceptor
 			}
 			finally
 			{
-				INTERCEPTING.set(false);
+				INTERCEPTING.remove();
 			}
 		}
 
@@ -140,7 +140,7 @@ public class CallScopeUniInterceptor
 						}
 						finally
 						{
-								INTERCEPTING.set(false);
+								INTERCEPTING.remove();
 						}
 				}
 		}
