@@ -21,8 +21,7 @@ This library is the **client SPI** — it defines the contracts that all GuicedE
 ```xml
 <dependency>
     <groupId>com.guicedee</groupId>
-    <artifactId>guice-inject-client</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <artifactId>client</artifactId>
 </dependency>
 ```
 
