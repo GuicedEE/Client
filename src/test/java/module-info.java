@@ -1,0 +1,6 @@
+module com.guicedee.inject.client.test {
+    requires com.guicedee.client;
+    requires org.junit.jupiter.api;
+
+    opens com.guicedee.client.test to org.junit.platform.commons;
+}
