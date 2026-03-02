@@ -18,6 +18,7 @@ package com.guicedee.client.services.lifecycle;
 
 import com.guicedee.client.IGuiceContext;
 import com.guicedee.client.services.IDefaultService;
+import io.smallrye.mutiny.Uni;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -44,7 +45,7 @@ public interface IGuicePostStartup<J extends IGuicePostStartup<J>>
      *
      * @return futures representing async startup work
      */
-    List<Future<Boolean>> postLoad();
+    List<Uni<Boolean>> postLoad();
 
     /**
      * Executes a callable on the shared worker pool and returns its future.

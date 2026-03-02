@@ -2,7 +2,7 @@ package com.guicedee.client.implementations;
 
 import com.guicedee.client.services.lifecycle.IGuicePostStartup;
 import com.guicedee.client.services.websocket.IGuicedWebSocket;
-import io.vertx.core.Future;
+import io.smallrye.mutiny.Uni;
 
 import java.util.List;
 
@@ -18,15 +18,15 @@ public class GuicedEEClientPostStartup implements IGuicePostStartup<GuicedEEClie
 {
 		
 		/**
-		 * Loads and registers WebSocket message receivers.
-		 *
-		 * @return a completed future indicating success
-		 */
+         * Loads and registers WebSocket message receivers.
+         *
+         * @return a completed future indicating success
+         */
 		@Override
-		public List<Future<Boolean>> postLoad()
+		public List<Uni<Boolean>> postLoad()
 		{
 				IGuicedWebSocket.loadWebSocketReceivers();
-				return List.of(Future.succeededFuture(true));
+				return List.of(Uni.createFrom().item(true));
 		}
 		
 		/**
