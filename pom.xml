@@ -102,6 +102,56 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>coverage</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <!-- Lifecycle hooks requiring full Guice bootstrap -->
+                                <exclude>com/guicedee/client/implementations/GuicedEEClientStartup.class</exclude>
+                                <exclude>com/guicedee/client/implementations/GuicedEEClientPostStartup.class</exclude>
+                                <exclude>com/guicedee/client/implementations/GuicedEEClientModule.class</exclude>
+                                <!-- Scope classes requiring full Guice injector -->
+                                <exclude>com/guicedee/client/scopes/CallScoper.class</exclude>
+                                <exclude>com/guicedee/client/scopes/mutiny/CallScopeUniInterceptor*.class</exclude>
+                                <!-- Log4j2 programmatic configuration -->
+                                <exclude>com/guicedee/client/utils/LogUtils.class</exclude>
+                                <!-- Interface with static methods requiring ServiceLoader + Guice injector -->
+                                <exclude>com/guicedee/client/IGuiceContext.class</exclude>
+                                <!-- Marker annotations (no logic) -->
+                                <exclude>com/guicedee/client/annotations/INotEnhanceable.class</exclude>
+                                <exclude>com/guicedee/client/annotations/INotInjectable.class</exclude>
+                                <!-- Scope annotation (no logic) -->
+                                <exclude>com/guicedee/client/scopes/CallScope.class</exclude>
+                                <!-- Pure SPI / service interfaces (no logic) -->
+                                <exclude>com/guicedee/client/services/IGuiceProvider.class</exclude>
+                                <exclude>com/guicedee/client/services/IGuiceConfig.class</exclude>
+                                <exclude>com/guicedee/client/services/IDefaultBinder.class</exclude>
+                                <exclude>com/guicedee/client/services/IDefaultService.class</exclude>
+                                <exclude>com/guicedee/client/services/IServiceEnablement.class</exclude>
+                                <exclude>com/guicedee/client/services/IGuiceContextInternalBinder.class</exclude>
+                                <exclude>com/guicedee/client/services/Log4JConfigurator.class</exclude>
+                                <!-- SPI config scanner interfaces (no logic) -->
+                                <exclude>com/guicedee/client/services/config/*.class</exclude>
+                                <!-- Lifecycle SPI interfaces (no logic or default-only methods) -->
+                                <exclude>com/guicedee/client/services/lifecycle/*.class</exclude>
+                                <!-- WebSocket SPI interfaces and hooks requiring Guice context -->
+                                <exclude>com/guicedee/client/services/websocket/*.class</exclude>
+                                <!-- IEnvironment - SPI interface (no logic) -->
+                                <exclude>com/guicedee/client/IEnvironment.class</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
