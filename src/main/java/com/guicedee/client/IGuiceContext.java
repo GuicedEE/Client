@@ -57,6 +57,7 @@ public interface IGuiceContext {
      */
     Map<Class<?>, Set<?>> allLoadedServices = new LinkedHashMap<>();
 
+    @SuppressWarnings("LombokGetterMayBeUsed")
     static Map<Class<?>, Set<?>> getAllLoadedServices() {
         return allLoadedServices;
     }
@@ -340,7 +341,6 @@ public interface IGuiceContext {
 
         //noinspection unchecked
         Set<Class<T>> result = (Set) loaderClasses.get(type);
-        //LogManager.getLogger(IGuiceContext.class).trace("📤 Returning {} implementation classes for service: {}", result.size(), type);
         return result;
     }
 
