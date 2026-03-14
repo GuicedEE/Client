@@ -1,5 +1,6 @@
 package com.guicedee.client.services.config;
 
+import com.guicedee.client.services.IDefaultService;
 import io.github.classgraph.ResourceList;
 
 import java.util.Map;
@@ -8,8 +9,8 @@ import java.util.regex.Pattern;
 /**
  * Marks the class as a file scanner
  */
-@FunctionalInterface
-public interface IFileContentsPatternScanner
+public interface IFileContentsPatternScanner<J extends IFileContentsPatternScanner<J>>
+		extends IDefaultService<J>
 {
 	/**
 	 * Returns a contents processor to run on match

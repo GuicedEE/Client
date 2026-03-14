@@ -1,5 +1,7 @@
 package com.guicedee.client.services.config;
 
+import com.guicedee.client.services.IDefaultService;
+
 import java.util.Set;
 
 /**
@@ -54,8 +56,8 @@ import java.util.Set;
  * directories/jars that you do want to scan. (However, be aware that the system classloader may still return cached references to already-loaded classfiles outside this overridden
  * path (or won't call your custom ClassLoader), due to class caching.)
  */
-@FunctionalInterface
-public interface IPackageRejectListScanner {
+public interface IPackageRejectListScanner<J extends IPackageRejectListScanner<J>>
+		extends IDefaultService<J> {
 	/**
 	 * The constructor accepts a list of whitelisted package prefixes / jar names to scan, as well as blacklisted packages/jars not to scan, where blacklisted entries are prefixed
 	 * <p>

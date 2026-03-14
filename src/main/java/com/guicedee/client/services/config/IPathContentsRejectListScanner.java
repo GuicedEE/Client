@@ -1,5 +1,7 @@
 package com.guicedee.client.services.config;
 
+import com.guicedee.client.services.IDefaultService;
+
 import java.util.Set;
 
 /**
@@ -54,8 +56,8 @@ import java.util.Set;
  * directories/jars that you do want to scan. (However, be aware that the system classloader may still return cached references to already-loaded classfiles outside this overridden
  * path (or won't call your custom ClassLoader), due to class caching.)
  */
-@FunctionalInterface
-public interface IPathContentsRejectListScanner {
+public interface IPathContentsRejectListScanner<J extends IPathContentsRejectListScanner<J>>
+		extends IDefaultService<J> {
 	/**
 	 * If you only need to scan resources and not classes, .enableClassInfo() or .enableAllInfo() should not be called, for speed. Also, if you don't need to scan classes, you
 	 * should specify the whitelist by calling .whitelistPaths() and using path separators (/), rather than by calling .whitelistPackages() and using package separators (.). Path
