@@ -8,6 +8,12 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class Environment {
     /**
+     * Utility class — not instantiable.
+     */
+    private Environment() {
+    }
+
+    /**
      * Resolves a property from system properties or environment variables, falling back to a default.
      *
      * @param key          the system property or environment variable name

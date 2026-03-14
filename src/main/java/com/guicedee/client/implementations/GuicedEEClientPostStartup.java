@@ -16,6 +16,11 @@ import java.util.List;
  */
 public class GuicedEEClientPostStartup implements IGuicePostStartup<GuicedEEClientPostStartup>
 {
+		/**
+		 * Creates a new post-startup hook for WebSocket receiver loading.
+		 */
+		public GuicedEEClientPostStartup() {
+		}
 		
 		/**
          * Loads and registers WebSocket message receivers.

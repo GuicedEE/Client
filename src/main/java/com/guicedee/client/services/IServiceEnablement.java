@@ -2,6 +2,8 @@ package com.guicedee.client.services;
 
 /**
  * Defines a service that can be enabled or disabled at runtime.
+ *
+ * @param <J> the implementing service type
  */
 @SuppressWarnings("unused")
 @FunctionalInterface

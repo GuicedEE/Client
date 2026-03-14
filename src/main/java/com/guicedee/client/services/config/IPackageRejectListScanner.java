@@ -55,6 +55,8 @@ import java.util.Set;
  * Override the classpath or provide a custom URLClassLoader before scanning, so that there are no non-scanned classpath elements that can mask elements in the whitelisted
  * directories/jars that you do want to scan. (However, be aware that the system classloader may still return cached references to already-loaded classfiles outside this overridden
  * path (or won't call your custom ClassLoader), due to class caching.)
+ *
+ * @param <J> the implementing scanner type
  */
 public interface IPackageRejectListScanner<J extends IPackageRejectListScanner<J>>
 		extends IDefaultService<J> {

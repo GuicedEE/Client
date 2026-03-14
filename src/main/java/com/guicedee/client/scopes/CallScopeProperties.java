@@ -24,6 +24,13 @@ public class CallScopeProperties implements Serializable
 {
 	@Serial
 	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Creates new call scope properties with default values.
+	 */
+	public CallScopeProperties() {
+	}
+
 	/**
 	 * The source of the call scope entry
 	 */

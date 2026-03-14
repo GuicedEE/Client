@@ -6,6 +6,8 @@ import java.util.Set;
 
 /**
  * Marks JAR files referenced from libraries to be excluded from all scans
+ *
+ * @param <J> the implementing exclusions type
  */
 @FunctionalInterface
 public interface IGuiceScanModuleExclusions<J extends IGuiceScanModuleExclusions<J>>

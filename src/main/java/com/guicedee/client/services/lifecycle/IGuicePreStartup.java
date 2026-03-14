@@ -31,6 +31,7 @@ import java.util.List;
  * Idempotency: implementations should be safe to invoke once and tolerate repeated calls.
  *
  * @author GedMarc
+ * @param <J> the implementing pre-startup type
  * @since 15 May 2017
  */
 @INotInjectable

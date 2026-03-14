@@ -6,6 +6,8 @@ import java.util.Set;
 
 /**
  * Supplies jar names to include when scanning.
+ *
+ * @param <J> the implementing inclusions type
  */
 @FunctionalInterface
 public interface IGuiceScanJarInclusions<J extends IGuiceScanJarInclusions<J>>

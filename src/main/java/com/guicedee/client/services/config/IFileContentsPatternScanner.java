@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 
 /**
  * Marks the class as a file scanner
+ *
+ * @param <J> the implementing scanner type
  */
 public interface IFileContentsPatternScanner<J extends IFileContentsPatternScanner<J>>
 		extends IDefaultService<J>

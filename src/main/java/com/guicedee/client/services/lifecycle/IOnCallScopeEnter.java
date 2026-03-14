@@ -10,6 +10,8 @@ import com.guicedee.client.services.IDefaultService;
  * Trigger: called on scope entry from {@link com.guicedee.client.scopes.CallScoper#enter()}.
  * Order: ascending {@link #sortOrder()}, default 100.
  * Idempotency: implementations should tolerate repeated invocations per scope.
+ *
+ * @param <J> the implementing scope-enter type
  */
 @FunctionalInterface
 public interface IOnCallScopeEnter<J extends IOnCallScopeEnter<J>> extends IDefaultService<J>

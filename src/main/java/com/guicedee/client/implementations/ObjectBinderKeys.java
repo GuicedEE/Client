@@ -6,12 +6,18 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 
-@SuppressWarnings("unused")
 /**
  * Named Guice {@link Key} constants for Jackson object mapper bindings.
  */
+@SuppressWarnings("unused")
 public class ObjectBinderKeys
 {
+		/**
+		 * Utility class — not instantiable.
+		 */
+		private ObjectBinderKeys() {
+		}
+
 		/**
 			* The default object mapping
 			*/

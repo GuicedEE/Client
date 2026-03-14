@@ -11,6 +11,8 @@ public interface IGuiceConfig<J extends IGuiceConfig<J>> {
      * It's a great way to enable testing in jdk 12 where test classes using service loading and jdk no longer reads service loaders from meta-inf/services
      * <p>
      * Try to only use in test to load test modules. otherwise it may be a bad design
+     *
+     * @return true when classpath scanning is used for service loading
      */
     boolean isServiceLoadWithClassPath();
 

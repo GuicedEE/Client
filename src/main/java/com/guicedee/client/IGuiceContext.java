@@ -49,13 +49,14 @@ public interface IGuiceContext {
     List<com.google.inject.Module> modules = new ArrayList<>();
     /**
      * Cache of loaded service types and their resolved implementations.
-     * -- GETTER --
-     *  Returns the shared cache of loaded service types.
-     *
-     * @return the loaded service cache
-
      */
     Map<Class<?>, Set<?>> allLoadedServices = new LinkedHashMap<>();
+
+    /**
+     * Returns the shared cache of loaded service types.
+     *
+     * @return the loaded service cache
+     */
 
     @SuppressWarnings("LombokGetterMayBeUsed")
     static Map<Class<?>, Set<?>> getAllLoadedServices() {
@@ -195,6 +196,14 @@ public interface IGuiceContext {
         return false;
     }
 
+    /**
+     * Resolves an instance from the injector using an optional binding annotation.
+     *
+     * @param type       the requested type
+     * @param annotation the binding annotation, or {@code null} for the default binding
+     * @param <T>        the resolved type
+     * @return the resolved instance
+     */
     static <T> T get(Class<T> type, Class<? extends Annotation> annotation) {
         if (annotation == null) {
             return get(Key.get(type));

@@ -35,6 +35,7 @@ import java.util.concurrent.Callable;
  * Idempotency: implementations should be safe to invoke once and tolerate repeated calls.
  *
  * @author GedMarc
+ * @param <J> the implementing post-startup type
  * @since 15 May 2017
  */
 public interface IGuicePostStartup<J extends IGuicePostStartup<J>>

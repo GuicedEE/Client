@@ -6,6 +6,8 @@ import java.util.Set;
 
 /**
  * Supplies module names to include when scanning.
+ *
+ * @param <J> the implementing inclusions type
  */
 @FunctionalInterface
 public interface IGuiceScanModuleInclusions<J extends IGuiceScanModuleInclusions<J>>

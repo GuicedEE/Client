@@ -10,6 +10,8 @@ import com.guicedee.client.services.IGuiceConfig;
  * Trigger: invoked during context bootstrap before injector build.
  * Order: ascending {@link #sortOrder()}, default 100.
  * Idempotency: implementations should avoid side effects beyond config mutation.
+ *
+ * @param <J> the implementing configurator type
  */
 public interface IGuiceConfigurator<J extends IGuiceConfigurator<J>>
 		extends IDefaultService<J> {

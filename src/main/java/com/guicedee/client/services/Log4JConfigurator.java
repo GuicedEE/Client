@@ -4,6 +4,8 @@ import org.apache.logging.log4j.core.config.Configuration;
 
 /**
  * Hook for customizing Log4j2 configuration during startup.
+ *
+ * @param <J> the implementing configurator type
  */
 public interface Log4JConfigurator<J extends Log4JConfigurator<J>>
 		extends IDefaultService<J>

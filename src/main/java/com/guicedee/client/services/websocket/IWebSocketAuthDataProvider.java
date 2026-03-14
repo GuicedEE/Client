@@ -10,6 +10,8 @@ import com.guicedee.client.services.IServiceEnablement;
  * Trigger: invoked during WebSocket setup or connection.
  * Order: ascending {@link #sortOrder()}, default 100.
  * Idempotency: implementations should be safe to invoke repeatedly.
+ *
+ * @param <J> the implementing provider type
  */
 @SuppressWarnings("unused")
 public interface IWebSocketAuthDataProvider<J extends IWebSocketAuthDataProvider<J>>

@@ -7,6 +7,8 @@ import java.util.Map;
 
 /**
  * Marks the class as a file scanner
+ *
+ * @param <J> the implementing scanner type
  */
 public interface IFileContentsScanner<J extends IFileContentsScanner<J>>
 		extends IDefaultService<J>

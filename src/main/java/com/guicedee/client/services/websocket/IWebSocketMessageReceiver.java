@@ -6,6 +6,9 @@ import java.util.Set;
 
 /**
  * Registers receivers for WebSocket messages.
+ *
+ * @param <R> the response payload type
+ * @param <J> the implementing receiver type
  */
 public interface IWebSocketMessageReceiver<R,J extends IWebSocketMessageReceiver<R,J>>
 		extends IDefaultService<J>

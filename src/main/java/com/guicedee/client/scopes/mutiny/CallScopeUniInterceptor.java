@@ -23,6 +23,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class CallScopeUniInterceptor
 		implements UniInterceptor
 {
+		/**
+		 * Creates a new call scope Uni interceptor.
+		 */
+		public CallScopeUniInterceptor() {
+		}
+
 		private static final Key<CallScopeProperties> CALL_SCOPE_PROPERTIES_KEY = Key.get(CallScopeProperties.class);
 
 		/**

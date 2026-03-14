@@ -20,6 +20,12 @@ import java.util.List;
 public class GuicedEEClientStartup implements IGuicePreStartup<GuicedEEClientStartup>
 {
 		/**
+		 * Creates a new pre-startup hook for client initialization.
+		 */
+		public GuicedEEClientStartup() {
+		}
+
+		/**
 		 * Configures the GuicedEE client scanning defaults and reloads Mutiny interceptors.
 		 *
 		 * @return a completed future indicating startup success

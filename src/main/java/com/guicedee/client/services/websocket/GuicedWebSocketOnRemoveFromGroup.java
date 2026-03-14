@@ -11,6 +11,8 @@ import java.util.concurrent.CompletableFuture;
  * Trigger: invoked on group leave.
  * Order: ascending {@link #sortOrder()}, default 100.
  * Idempotency: implementations should tolerate repeated removals.
+ *
+ * @param <J> the implementing type
  */
 public interface GuicedWebSocketOnRemoveFromGroup<J extends GuicedWebSocketOnRemoveFromGroup<J>>  extends IDefaultService<J> {
     /**

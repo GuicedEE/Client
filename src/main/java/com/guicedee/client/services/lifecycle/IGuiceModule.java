@@ -9,6 +9,8 @@ import com.guicedee.client.services.IDefaultService;
  * Trigger: invoked during injector creation.
  * Order: ascending {@link #sortOrder()}, default 100.
  * Idempotency: module bindings should be deterministic and safe to register once.
+ *
+ * @param <J> the implementing module type
  */
 public interface IGuiceModule<J extends IGuiceModule<J>>
 		extends IDefaultService<J>, com.google.inject.Module

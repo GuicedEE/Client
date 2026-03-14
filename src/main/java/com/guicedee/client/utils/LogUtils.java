@@ -31,6 +31,12 @@ public class LogUtils
 {
     private static final Set<String> names = new HashSet<>();
 
+    /**
+     * Utility class — not instantiable.
+     */
+    private LogUtils() {
+    }
+
     private static boolean isCloud()
     {
         // Lazy access to Environment to avoid circular init; refer by FQN
@@ -127,6 +133,8 @@ public class LogUtils
     /**
      * Adds a ConsoleAppender that logs to System.out at the given level.
      * If already added in this JVM, this is a no-op.
+     *
+     * @param level the minimum log level for the console appender
      */
     public static void addConsoleLogger(Level level)
     {
@@ -164,6 +172,8 @@ public class LogUtils
     /**
      * Adds a highlighted ConsoleAppender (ANSI colors) to System.out at the given level.
      * If already added in this JVM, this is a no-op.
+     *
+     * @param level the minimum log level for the highlighted console appender
      */
     public static void addHighlightedConsoleLogger(Level level)
     {

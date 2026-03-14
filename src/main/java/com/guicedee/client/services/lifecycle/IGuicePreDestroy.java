@@ -27,6 +27,7 @@ import com.guicedee.client.services.IDefaultService;
  * Idempotency: implementations should be safe to invoke once and tolerate repeated calls.
  *
  * @author GedMarc
+ * @param <J> the implementing pre-destroy type
  * @since 15 May 2017
  */
 public interface IGuicePreDestroy<J extends IGuicePreDestroy<J>> extends IDefaultService<J>

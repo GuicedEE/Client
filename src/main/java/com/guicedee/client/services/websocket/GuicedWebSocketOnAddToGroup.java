@@ -4,7 +4,6 @@ import com.guicedee.client.services.IDefaultService;
 
 import java.util.concurrent.CompletableFuture;
 
-@FunctionalInterface
 /**
  * Hook invoked when a connection joins a WebSocket group.
  * <p>
@@ -12,7 +11,10 @@ import java.util.concurrent.CompletableFuture;
  * Trigger: invoked on group join.
  * Order: ascending {@link #sortOrder()}, default 100.
  * Idempotency: implementations should tolerate repeated joins.
+ *
+ * @param <J> the implementing type
  */
+@FunctionalInterface
 public interface GuicedWebSocketOnAddToGroup<J extends GuicedWebSocketOnAddToGroup<J>> extends IDefaultService<J> {
     /**
      * Handles group join events.
