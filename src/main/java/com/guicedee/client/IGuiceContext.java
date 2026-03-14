@@ -87,6 +87,7 @@ public interface IGuiceContext {
                 Object instance = guiceContextClass.getMethod("instance").invoke(null);
                 if (instance instanceof IGuiceContext ctx) {
                     contexts.put("default", ctx);
+                    ctx.getConfig().setClasspathScanning(true).setAnnotationScanning(true).setMethodInfo(true).setFieldInfo(true);
                     out = ctx;
                 }
             } catch (Exception e) {
