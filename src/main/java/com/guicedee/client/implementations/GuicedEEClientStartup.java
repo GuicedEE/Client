@@ -17,58 +17,52 @@ import java.util.List;
  * Idempotency: safe to run once; repeated runs reapply configuration and reload interceptors.
  */
 @Log4j2
-public class GuicedEEClientStartup implements IGuicePreStartup<GuicedEEClientStartup>
-{
-		/**
-		 * Creates a new pre-startup hook for client initialization.
-		 */
-		public GuicedEEClientStartup() {
-		}
+public class GuicedEEClientStartup implements IGuicePreStartup<GuicedEEClientStartup> {
+    /**
+     * Creates a new pre-startup hook for client initialization.
+     */
+    public GuicedEEClientStartup() {
+    }
 
-		/**
-		 * Configures the GuicedEE client scanning defaults and reloads Mutiny interceptors.
-		 *
-		 * @return a completed future indicating startup success
-		 */
-		@Override
-		public List<Future<Boolean>> onStartup()
-		{
-				log.trace("🚀 Starting GuicedEE Client initialization");
-				try
-				{
-						log.trace("📋 Configuring GuicedEE scanning options");
-						IGuiceContext
-							.instance()
-							.getConfig()
-							.setFieldScanning(true)
-							.setMethodInfo(true)
-							.setIgnoreClassVisibility(true)
-							.setIgnoreMethodVisibility(true)
-							.setIgnoreFieldVisibility(true)
-							.setAnnotationScanning(true)
-						;
-						log.debug("✅ GuicedEE scanning options configured successfully");
-						log.trace("🔄 Reloading Mutiny Uni interceptors");
-						Infrastructure.reloadUniInterceptors();
-						log.trace("✅ GuicedEE Client initialized successfully");
-				}
-				catch (Throwable T)
-				{
-						log.error("❌ No Guice Client Instantiation Found: {}", T.getMessage(), T);
-						log.error("💥 Please add guiced-injection to the classpath to resolve this issue");
-				}
-				log.trace("📤 Returning startup result");
-				return List.of(Future.succeededFuture(true));
-		}
-		
-		/**
-		 * Ensures this startup hook runs before other services.
-		 *
-		 * @return the sort order
-		 */
-		@Override
-		public Integer sortOrder()
-		{
-				return Integer.MIN_VALUE + 1;
-		}
+    /**
+     * Configures the GuicedEE client scanning defaults and reloads Mutiny interceptors.
+     *
+     * @return a completed future indicating startup success
+     */
+    @Override
+    public List<Future<Boolean>> onStartup() {
+        log.trace("🚀 Starting GuicedEE Client initialization");
+        try {
+            log.trace("📋 Configuring GuicedEE scanning options");
+            IGuiceContext
+                    .instance()
+                    .getConfig()
+                    .setFieldScanning(true)
+                    .setMethodInfo(true)
+                    .setIgnoreClassVisibility(true)
+                    .setIgnoreMethodVisibility(true)
+                    .setIgnoreFieldVisibility(true)
+                    .setAnnotationScanning(true)
+            ;
+            log.debug("✅ GuicedEE scanning options configured successfully");
+            log.trace("🔄 Reloading Mutiny Uni interceptors");
+            Infrastructure.reloadUniInterceptors();
+            log.trace("✅ GuicedEE Client initialized successfully");
+        } catch (Throwable T) {
+            log.error("❌ No Guice Client Instantiation Found: {}", T.getMessage(), T);
+            log.error("💥 Please add guiced-injection to the classpath to resolve this issue");
+        }
+        log.trace("📤 Returning startup result");
+        return List.of(Future.succeededFuture(true));
+    }
+
+    /**
+     * Ensures this startup hook runs before other services.
+     *
+     * @return the sort order
+     */
+    @Override
+    public Integer sortOrder() {
+        return Integer.MIN_VALUE + 1;
+    }
 }

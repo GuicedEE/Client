@@ -14,34 +14,31 @@ import java.util.List;
  * Order: {@link #sortOrder()} ensures it runs early in post-startup.
  * Idempotency: safe to call repeatedly; registration checks avoid duplicates.
  */
-public class GuicedEEClientPostStartup implements IGuicePostStartup<GuicedEEClientPostStartup>
-{
-		/**
-		 * Creates a new post-startup hook for WebSocket receiver loading.
-		 */
-		public GuicedEEClientPostStartup() {
-		}
-		
-		/**
-         * Loads and registers WebSocket message receivers.
-         *
-         * @return a completed future indicating success
-         */
-		@Override
-		public List<Uni<Boolean>> postLoad()
-		{
-				IGuicedWebSocket.loadWebSocketReceivers();
-				return List.of(Uni.createFrom().item(true));
-		}
-		
-		/**
-		 * Ensures this hook runs near the beginning of post-startup.
-		 *
-		 * @return the sort order
-		 */
-		@Override
-		public Integer sortOrder()
-		{
-				return Integer.MIN_VALUE + 650;
-		}
+public class GuicedEEClientPostStartup implements IGuicePostStartup<GuicedEEClientPostStartup> {
+    /**
+     * Creates a new post-startup hook for WebSocket receiver loading.
+     */
+    public GuicedEEClientPostStartup() {
+    }
+
+    /**
+     * Loads and registers WebSocket message receivers.
+     *
+     * @return a completed future indicating success
+     */
+    @Override
+    public List<Uni<Boolean>> postLoad() {
+        IGuicedWebSocket.loadWebSocketReceivers();
+        return List.of(Uni.createFrom().item(true));
+    }
+
+    /**
+     * Ensures this hook runs near the beginning of post-startup.
+     *
+     * @return the sort order
+     */
+    @Override
+    public Integer sortOrder() {
+        return Integer.MIN_VALUE + 650;
+    }
 }
