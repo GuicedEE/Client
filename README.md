@@ -30,7 +30,7 @@ This library is the **client SPI** — it defines the contracts that all GuicedE
 <summary>Gradle (Kotlin DSL)</summary>
 
 ```kotlin
-implementation("com.guicedee:guice-inject-client:2.0.0-RC1")
+implementation("com.guicedee:guice-inject-client:2.0.0-RC2")
 ```
 </details>
 
