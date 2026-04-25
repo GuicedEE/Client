@@ -34,5 +34,7 @@ public enum CallScopeSource
     /** Vert.x producer entry. */
     VertXProducer,
     /** Event entry. */
-    Event
+    Event,
+    /** Kafka consumer or producer entry. */
+    Kafka
 }
