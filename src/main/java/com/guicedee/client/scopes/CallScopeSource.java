@@ -36,5 +36,7 @@ public enum CallScopeSource
     /** Event entry. */
     Event,
     /** Kafka consumer or producer entry. */
-    Kafka
+    Kafka,
+    /** IBM MQ consumer or producer entry. */
+    IBMMQ
 }

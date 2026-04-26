@@ -3,7 +3,7 @@
 [![Build](https://github.com/GuicedEE/Client/actions/workflows/build.yml/badge.svg)](https://github.com/GuicedEE/Client/actions/workflows/build.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=GuicedEE_Client&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=GuicedEE_Client)
 [![Maven Central](https://img.shields.io/maven-central/v/com.guicedee/guice-inject-client)](https://central.sonatype.com/artifact/com.guicedee/guice-inject-client)
-[![Maven Snapshot](https://img.shields.io/nexus/s/com.guicedee/guice-inject-client?server=https%3A%2F%2Foss.sonatype.org&label=Maven%20Snapshot)](https://oss.sonatype.org/content/repositories/snapshots/com/guicedee/guice-inject-client/)
+[![Snapshot](https://img.shields.io/badge/Snapshot-2.0.0-SNAPSHOT-orange)](https://github.com/GuicedEE/Packages/packages/maven/com.guicedee.client)
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Java 25+](https://img.shields.io/badge/Java-25%2B-green)
@@ -110,13 +110,14 @@ IGuicePreStartup  →  Injector created  →  IGuicePostStartup
 
 ## 🗺️ Module Graph
 
-```
-com.guicedee.client
- ├── com.google.guice
- ├── io.github.classgraph
- ├── com.fasterxml.jackson.databind
- ├── io.vertx.core
- └── io.smallrye.mutiny
+```mermaid
+flowchart LR
+    com_guicedee_client["com.guicedee.client"]
+    com_guicedee_client --> com_google_guice["com.google.guice"]
+    com_guicedee_client --> io_github_classgraph["io.github.classgraph"]
+    com_guicedee_client --> com_fasterxml_jackson_databind["com.fasterxml.jackson.databind"]
+    com_guicedee_client --> io_vertx_core["io.vertx.core"]
+    com_guicedee_client --> io_smallrye_mutiny["io.smallrye.mutiny"]
 ```
 
 ## 📝 Logging — `LogUtils`
