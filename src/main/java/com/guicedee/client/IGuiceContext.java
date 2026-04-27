@@ -258,12 +258,16 @@ public interface IGuiceContext {
                     loadeds.add(load);
                 }
             }
-            try {
-                for (T newInstance : loader) {
+            for (ServiceLoader.Provider<T> provider : loader.stream().toList()) {
+                try {
+                    T newInstance = provider.get();
                     loadeds.add(newInstance.getClass());
+                }catch (NoClassDefFoundError e){
+                    LogManager.getLogger(IGuiceContext.class).debug("❌ Provider not found to provide instance of '{}' to TreeSet: {}", type, e.getMessage(), e);
                 }
-            } catch (Throwable T) {
-                LogManager.getLogger(IGuiceContext.class).error("❌ Failed to provide instance of '{}' to TreeSet: {}", type, T.getMessage(), T);
+                catch (Throwable T) {
+                    LogManager.getLogger(IGuiceContext.class).error("❌ Failed to provide instance of '{}' to TreeSet: {}", type, T.getMessage(), T);
+                }
             }
             loaderClasses.put(type, loadeds);
         }
@@ -299,13 +303,19 @@ public interface IGuiceContext {
 
         Set<Class<T>> completed = new LinkedHashSet<>();
         Set<T> output = new LinkedHashSet<>();
-        try {
-            for (T newInstance : loader) {
+        // Use ServiceLoader.stream() to handle individual provider failures gracefully
+        // so that a missing optional dependency (e.g. vertx-auth-oauth2) doesn't prevent
+        // other providers from loading
+        for (ServiceLoader.Provider<T> provider : loader.stream().toList()) {
+            try {
+                T newInstance = provider.get();
                 output.add(newInstance);
                 completed.add((Class<T>) newInstance.getClass());
+            } catch (NoClassDefFoundError e) {
+                LogManager.getLogger(IGuiceContext.class).debug("❌ Provider not found to provide instance of '{}' to Set: {}", type, e.getMessage(), e);
+            } catch (Throwable T) {
+                LogManager.getLogger(IGuiceContext.class).error("❌ Cannot load services for '{}': {}", type, T.getMessage(), T);
             }
-        } catch (Throwable T) {
-            LogManager.getLogger(IGuiceContext.class).error("❌ Cannot load services for '{}': {}", type, T.getMessage(), T);
         }
         return output;
     }
@@ -336,14 +346,15 @@ public interface IGuiceContext {
             } else {
             }
 
-            try {
-                for (T newInstance : loader) {
+            for (ServiceLoader.Provider<T> provider : loader.stream().toList()) {
+                try {
+                    T newInstance = provider.get();
                     //noinspection unchecked
                     Class<T> implementationClass = (Class<T>) newInstance.getClass();
                     loadeds.add(implementationClass);
+                } catch (Throwable T) {
+                    LogManager.getLogger(IGuiceContext.class).error("❌ Failed to provide instance of '{}' to TreeSet: {}", type, T.getMessage(), T);
                 }
-            } catch (Throwable T) {
-                LogManager.getLogger(IGuiceContext.class).error("❌ Failed to provide instance of '{}' to TreeSet: {}", type, T.getMessage(), T);
             }
 
             loaderClasses.put(type, loadeds);
