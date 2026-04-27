@@ -3,7 +3,7 @@
 [![Build](https://github.com/GuicedEE/Client/actions/workflows/build.yml/badge.svg)](https://github.com/GuicedEE/Client/actions/workflows/build.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=GuicedEE_Client&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=GuicedEE_Client)
 [![Maven Central](https://img.shields.io/maven-central/v/com.guicedee/guice-inject-client)](https://central.sonatype.com/artifact/com.guicedee/guice-inject-client)
-[![Snapshot](https://img.shields.io/badge/Snapshot-2.0.0-SNAPSHOT-orange)](https://github.com/GuicedEE/Packages/packages/maven/com.guicedee.client)
+[![Snapshot](https://img.shields.io/badge/Snapshot-2.0.1-SNAPSHOT-SNAPSHOT-orange)](https://github.com/GuicedEE/Packages/packages/maven/com.guicedee.client)
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Java 25+](https://img.shields.io/badge/Java-25%2B-green)
@@ -30,7 +30,7 @@ This library is the **client SPI** — it defines the contracts that all GuicedE
 <summary>Gradle (Kotlin DSL)</summary>
 
 ```kotlin
-implementation("com.guicedee:guice-inject-client:2.0.0-RC11")
+implementation("com.guicedee:guice-inject-client:2.0.1-SNAPSHOT")
 ```
 </details>
 
