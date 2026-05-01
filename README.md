@@ -3,14 +3,12 @@
 [![Build](https://github.com/GuicedEE/Client/actions/workflows/build.yml/badge.svg)](https://github.com/GuicedEE/Client/actions/workflows/build.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=GuicedEE_Client&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=GuicedEE_Client)
 [![Maven Central](https://img.shields.io/maven-central/v/com.guicedee/guice-inject-client)](https://central.sonatype.com/artifact/com.guicedee/guice-inject-client)
-[![Snapshot](https://img.shields.io/badge/Snapshot-2.0.1-SNAPSHOT-SNAPSHOT-orange)](https://github.com/GuicedEE/Packages/packages/maven/com.guicedee.client)
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Java 25+](https://img.shields.io/badge/Java-25%2B-green)
 ![Modular](https://img.shields.io/badge/Modular-Level3-green)
 ![Guice 7](https://img.shields.io/badge/Guice-7-green)
 ![Vert.X 5](https://img.shields.io/badge/Vert.x-5-green)
-![Maven 4](https://img.shields.io/badge/Maven-4-green)
 
 Dependency injection interfaces, lifecycle hooks, and scoping primitives for the [GuicedEE](https://github.com/GuicedEE) ecosystem.
 Built on [Google Guice](https://github.com/google/guice) and fully modularized for JPMS (`com.guicedee.client`).
