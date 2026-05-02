@@ -78,7 +78,16 @@ public class CallScoper implements Scope
         {
             return null;
         }
-        return ctx.getLocal(SCOPE_LOCAL_KEY);
+        try
+        {
+            return ctx.getLocal(SCOPE_LOCAL_KEY);
+        }
+        catch (IllegalArgumentException e)
+        {
+            // ContextLocal was registered after this Vertx instance was created —
+            // the context's local storage array doesn't include our key yet.
+            return null;
+        }
     }
 
     /**
