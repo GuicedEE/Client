@@ -5,6 +5,9 @@ import com.google.inject.*;
 import com.guicedee.client.IGuiceContext;
 import com.guicedee.client.services.lifecycle.IOnCallScopeEnter;
 import com.guicedee.client.services.lifecycle.IOnCallScopeExit;
+import io.vertx.core.Vertx;
+import io.vertx.core.Context;
+import io.vertx.core.spi.context.storage.ContextLocal;
 
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -15,7 +18,11 @@ import java.util.logging.Logger;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
- * Guice {@link Scope} implementation that manages a per-call thread-local scope.
+ * Guice {@link Scope} implementation that manages a per-call scope backed by the
+ * current Vert.x {@link Context} local data.
+ * <p>
+ * A Vert.x context must be available on the current thread; if not, an
+ * {@link IllegalStateException} is thrown.
  * <p>
  * Entering a scope seeds {@link CallScopeProperties} and triggers lifecycle callbacks.
  */
@@ -39,26 +46,78 @@ public class CallScoper implements Scope
                                                             " SimpleScope.seed(), but was not.");
                 }
             };
-    private static final ThreadLocal<Map<Key<?>, Object>> values
-            = new ThreadLocal<Map<Key<?>, Object>>();
+    @SuppressWarnings("unchecked")
+    private static final ContextLocal<Map<Key<?>, Object>> SCOPE_LOCAL_KEY =
+            (ContextLocal<Map<Key<?>, Object>>) (ContextLocal<?>) ContextLocal.registerLocal(Map.class);
 
     /**
-     * Indicates whether the current thread has an active call scope.
+     * Returns the current Vert.x context, throwing if none is available.
+     *
+     * @return the current Vert.x context, never null
+     * @throws IllegalStateException if no Vert.x context is active on the current thread
+     */
+    private static Context requireVertxContext()
+    {
+        Context ctx = Vertx.currentContext();
+        if (ctx == null)
+        {
+            throw new IllegalStateException(
+                    "No Vert.x context available on the current thread. " +
+                    "CallScoper requires a Vert.x context — ensure this code runs on a Vert.x event-loop, worker, or virtual thread.");
+        }
+        return ctx;
+    }
+
+    /**
+     * Returns the scoped-values map from the current Vert.x context.
+     */
+    private static Map<Key<?>, Object> currentScopeMap()
+    {
+        Context ctx = Vertx.currentContext();
+        if (ctx == null)
+        {
+            return null;
+        }
+        return ctx.getLocal(SCOPE_LOCAL_KEY);
+    }
+
+    /**
+     * Stores the scoped-values map into the current Vert.x context.
+     *
+     * @throws IllegalStateException if no Vert.x context is available
+     */
+    private static void setScopeMap(Map<Key<?>, Object> map)
+    {
+        Context ctx = requireVertxContext();
+        if (map != null)
+        {
+            ctx.putLocal(SCOPE_LOCAL_KEY, map);
+        }
+        else
+        {
+            ctx.removeLocal(SCOPE_LOCAL_KEY);
+        }
+    }
+
+    /**
+     * Indicates whether the current Vert.x context has an active call scope.
+     * <p>
+     * Returns {@code false} if no Vert.x context is available (rather than throwing).
      *
      * @return true when a scope is active
      */
     public boolean isStartedScope()
     {
-        return values.get() != null;
+        return currentScopeMap() != null;
     }
 
     /**
-     * Enters a new call scope for the current thread and notifies enter listeners.
+     * Enters a new call scope on the current Vert.x context and notifies enter listeners.
      */
     public void enter()
     {
-        checkState(values.get() == null, "A scoping block is already in progress");
-        values.set(Maps.<Key<?>, Object>newHashMap());
+        checkState(currentScopeMap() == null, "A scoping block is already in progress");
+        setScopeMap(Maps.<Key<?>, Object>newHashMap());
         // Seed CallScopeProperties and explicitly mark the source as Unknown on scope start
         CallScopeProperties props = new CallScopeProperties();
         props.setSource(CallScopeSource.Unknown);
@@ -80,13 +139,13 @@ public class CallScoper implements Scope
     }
 
     /**
-     * Returns the map of scoped values for the current thread.
+     * Returns the map of scoped values for the current Vert.x context.
      *
      * @return the scoped values, or null if no scope exists
      */
     public Map<Key<?>, Object> getValues()
     {
-        return values.get();
+        return currentScopeMap();
     }
 
     /**
@@ -96,7 +155,7 @@ public class CallScoper implements Scope
      */
     public void setValues(Map<Key<?>, Object> values)
     {
-        this.values.get().putAll(values);
+        currentScopeMap().putAll(values);
     }
 
     /**
@@ -104,7 +163,7 @@ public class CallScoper implements Scope
      */
     public void exit()
     {
-        checkState(values.get() != null, "No scoping block in progress");
+        checkState(currentScopeMap() != null, "No scoping block in progress");
         Set<IOnCallScopeExit> scopeExits = IGuiceContext.loaderToSet(ServiceLoader.load(IOnCallScopeExit.class));
         for (IOnCallScopeExit<?> scopeExit : scopeExits)
         {
@@ -118,7 +177,7 @@ public class CallScoper implements Scope
                         .log(Level.WARNING, "Exception on call scope exit - " + scopeExit, T);
             }
         }
-        values.remove();
+        setScopeMap(null);
     }
 
     /**
@@ -186,7 +245,7 @@ public class CallScoper implements Scope
 
     private <T> Map<Key<?>, Object> getScopedObjectMap(Key<T> key)
     {
-        Map<Key<?>, Object> scopedObjects = values.get();
+        Map<Key<?>, Object> scopedObjects = currentScopeMap();
         if (scopedObjects == null)
         {
             throw new OutOfScopeException("Cannot access " + key
