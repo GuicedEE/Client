@@ -28,7 +28,7 @@ This library is the **client SPI** — it defines the contracts that all GuicedE
 <summary>Gradle (Kotlin DSL)</summary>
 
 ```kotlin
-implementation("com.guicedee:client:2.0.1-SNAPSHOT")
+implementation("com.guicedee:client:2.0.1")
 ```
 </details>
 
