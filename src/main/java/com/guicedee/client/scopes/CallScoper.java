@@ -51,43 +51,33 @@ public class CallScoper implements Scope
             (ContextLocal<Map<Key<?>, Object>>) (ContextLocal<?>) ContextLocal.registerLocal(Map.class);
 
     /**
-     * Returns the current Vert.x context, throwing if none is available.
-     *
-     * @return the current Vert.x context, never null
-     * @throws IllegalStateException if no Vert.x context is active on the current thread
+     * Returns the current Vert.x context, or null if not on a Vert.x thread.
      */
-    private static Context requireVertxContext()
+    private static Context vertxContext()
     {
-        Context ctx = Vertx.currentContext();
-        if (ctx == null)
-        {
-            throw new IllegalStateException(
-                    "No Vert.x context available on the current thread. " +
-                    "CallScoper requires a Vert.x context — ensure this code runs on a Vert.x event-loop, worker, or virtual thread.");
-        }
-        return ctx;
+        return Vertx.currentContext();
     }
 
     /**
      * Returns the scoped-values map from the current Vert.x context.
+     *
+     * @throws IllegalStateException if no Vert.x context is available
      */
     private static Map<Key<?>, Object> currentScopeMap()
     {
-        Context ctx = Vertx.currentContext();
-        if (ctx == null)
+        Context ctx = vertxContext();
+        if (ctx != null)
         {
-            return null;
+            try
+            {
+                return ctx.getLocal(SCOPE_LOCAL_KEY);
+            }
+            catch (IllegalArgumentException e)
+            {
+                return null;
+            }
         }
-        try
-        {
-            return ctx.getLocal(SCOPE_LOCAL_KEY);
-        }
-        catch (IllegalArgumentException e)
-        {
-            // ContextLocal was registered after this Vertx instance was created —
-            // the context's local storage array doesn't include our key yet.
-            return null;
-        }
+        return null;
     }
 
     /**
@@ -97,14 +87,23 @@ public class CallScoper implements Scope
      */
     private static void setScopeMap(Map<Key<?>, Object> map)
     {
-        Context ctx = requireVertxContext();
-        if (map != null)
+        Context ctx = vertxContext();
+        if (ctx != null)
         {
-            ctx.putLocal(SCOPE_LOCAL_KEY, map);
+            if (map != null)
+            {
+                ctx.putLocal(SCOPE_LOCAL_KEY, map);
+            }
+            else
+            {
+                ctx.removeLocal(SCOPE_LOCAL_KEY);
+            }
         }
         else
         {
-            ctx.removeLocal(SCOPE_LOCAL_KEY);
+            throw new IllegalStateException(
+                    "No Vert.x context available on the current thread. " +
+                    "CallScoper requires a Vert.x context — ensure this code runs on a Vert.x event-loop, worker, or virtual thread.");
         }
     }
 
@@ -145,6 +144,30 @@ public class CallScoper implements Scope
                         .log(Level.WARNING, "Exception on scope entry - " + scopeEnter, T);
             }
         }
+    }
+
+    /**
+     * Enters a new call scope on the current Vert.x context <b>without</b> notifying
+     * lifecycle listeners. Use this when a scope is needed but the full Guice context
+     * should not be bootstrapped (e.g. in Maven plugins or tooling).
+     */
+    public void enterQuietly()
+    {
+        checkState(currentScopeMap() == null, "A scoping block is already in progress");
+        setScopeMap(Maps.<Key<?>, Object>newHashMap());
+        CallScopeProperties props = new CallScopeProperties();
+        props.setSource(CallScopeSource.Unknown);
+        seed(CallScopeProperties.class, props);
+    }
+
+    /**
+     * Exits the current call scope <b>without</b> notifying lifecycle listeners.
+     * Counterpart to {@link #enterQuietly()}.
+     */
+    public void exitQuietly()
+    {
+        checkState(currentScopeMap() != null, "No scoping block in progress");
+        setScopeMap(null);
     }
 
     /**

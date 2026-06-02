@@ -115,6 +115,14 @@ public class CallScopeUniInterceptor
 						INTERCEPTING.set(true);
 						try
 						{
+								// During bootstrap or when no Vert.x context exists, skip scope management
+								// to avoid failures on non-Vert.x threads (main thread during inject()).
+								if (io.vertx.core.Vertx.currentContext() == null)
+								{
+										AbstractUni.subscribe(upstream, subscriber);
+										return;
+								}
+
 								CallScoper callScoper = IGuiceContext.get(CallScoper.class);
 								boolean startedHere = false;
 
