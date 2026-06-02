@@ -1,35 +1,48 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.guicedee</groupId>
         <artifactId>parent</artifactId>
-        <version>2.1.0-SNAPSHOT</version>
+        <version>2.1.1-SNAPSHOT</version>
     </parent>
-
     <groupId>com.guicedee</groupId>
     <artifactId>client</artifactId>
     <name>GuicedEE Client</name>
-
+    <url>https://guicedee.com</url>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/GuicedEE/Client</url>
+        <connection>scm:git:https://github.com/GuicedEE/Client.git</connection>
+        <developerConnection>scm:git:https://github.com/GuicedEE/Client.git</developerConnection>
+    </scm>
+    <developers>
+        <developer>
+            <id>GedMarc</id>
+            <name>Marc Magon</name>
+            <email>marc.magon@gmail.com</email>
+            <url>https://github.com/GedMarc</url>
+        </developer>
+    </developers>
     <dependencies>
-
         <dependency>
             <groupId>com.guicedee.modules.services</groupId>
             <artifactId>guice</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.jspecify</groupId>
             <artifactId>jspecify</artifactId>
         </dependency>
-
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-core</artifactId>
         </dependency>
-
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
@@ -38,7 +51,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -48,44 +60,36 @@
             <artifactId>log4j-api</artifactId>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j2-impl</artifactId>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-jul</artifactId>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>io.smallrye.reactive</groupId>
             <artifactId>mutiny</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -117,7 +121,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <delete file="target/source-output/module-info.java" failonerror="false"/>
+                                <delete file="target/source-output/module-info.java" failonerror="false" />
                             </target>
                         </configuration>
                     </execution>
@@ -133,7 +137,6 @@
             </plugin>
         </plugins>
     </build>
-
     <profiles>
         <profile>
             <id>coverage</id>
@@ -183,7 +186,6 @@
             </build>
         </profile>
     </profiles>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
