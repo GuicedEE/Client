@@ -124,24 +124,29 @@ public class CallScoper implements Scope
      */
     public void enter()
     {
-        checkState(currentScopeMap() == null, "A scoping block is already in progress");
-        setScopeMap(Maps.<Key<?>, Object>newHashMap());
-        // Seed CallScopeProperties and explicitly mark the source as Unknown on scope start
-        CallScopeProperties props = new CallScopeProperties();
-        props.setSource(CallScopeSource.Unknown);
-        seed(CallScopeProperties.class, props);
-        @SuppressWarnings("rawtypes")
-        Set<IOnCallScopeEnter> scopeEnters = IGuiceContext.loaderToSet(ServiceLoader.load(IOnCallScopeEnter.class));
-        for (IOnCallScopeEnter<?> scopeEnter : scopeEnters)
+        if(currentScopeMap() != null)
         {
-            try
+            Logger.getLogger("CallScoper")
+                    .log(Level.FINEST, "A call scope is already active on this context.");
+        }else {
+            setScopeMap(Maps.<Key<?>, Object>newHashMap());
+            // Seed CallScopeProperties and explicitly mark the source as Unknown on scope start
+            CallScopeProperties props = new CallScopeProperties();
+            props.setSource(CallScopeSource.Unknown);
+            seed(CallScopeProperties.class, props);
+            @SuppressWarnings("rawtypes")
+            Set<IOnCallScopeEnter> scopeEnters = IGuiceContext.loaderToSet(ServiceLoader.load(IOnCallScopeEnter.class));
+            for (IOnCallScopeEnter<?> scopeEnter : scopeEnters)
             {
-                scopeEnter.onScopeEnter(this);
-            }
-            catch (Throwable T)
-            {
-                Logger.getLogger("CallScoper")
-                        .log(Level.WARNING, "Exception on scope entry - " + scopeEnter, T);
+                try
+                {
+                    scopeEnter.onScopeEnter(this);
+                }
+                catch (Throwable T)
+                {
+                    Logger.getLogger("CallScoper")
+                            .log(Level.WARNING, "Exception on scope entry - " + scopeEnter, T);
+                }
             }
         }
     }
