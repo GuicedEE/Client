@@ -122,7 +122,7 @@ public class Environment {
             return "";
         }
         String resolvedDefault = resolvePlaceholders(defaultValue);
-        log.debug("📋 Using default value for property - Name: '{}', Value: '{}'", name, resolvedDefault);
+        log.trace("📋 Using default value for property - Name: '{}', Value: '{}'", name, resolvedDefault);
         try {
             System.setProperty(name, resolvedDefault);
             return System.getProperty(name);
