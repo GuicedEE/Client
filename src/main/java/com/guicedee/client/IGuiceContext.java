@@ -58,7 +58,6 @@ public interface IGuiceContext {
      * @return the loaded service cache
      */
 
-    @SuppressWarnings("LombokGetterMayBeUsed")
     static Map<Class<?>, Set<?>> getAllLoadedServices() {
         return allLoadedServices;
     }
@@ -398,7 +397,6 @@ public interface IGuiceContext {
      *
      * @param javaModuleName the module name from {@code module-info.java}
      */
-    @SuppressWarnings("unchecked")
     static void registerModule(String javaModuleName) {
         registerModuleForScanning.add(javaModuleName);
         instance()
