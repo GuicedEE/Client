@@ -140,4 +140,41 @@ class EnvironmentTest {
         String result = Environment.resolvePlaceholders("${ENVTEST_LOOP_A}");
         assertNotNull(result);
     }
+
+    // ─── Dot-env resolution (Option B: getProperty must honor .env) ──────────────
+
+    @Test
+    void getPropertyResolvesFromDotEnv() {
+        // Key only exists in src/test/resources/.env, not as a system property or OS env var.
+        System.clearProperty("DOTENV_TEST_FSDM_PASSWORD");
+        propsToClean.add("DOTENV_TEST_FSDM_PASSWORD");
+        Environment.reloadDotEnv();
+        String result = Environment.getProperty("DOTENV_TEST_FSDM_PASSWORD", "fsdm");
+        assertEquals("secret-from-dotenv", result,
+                "getProperty must read values from .env rather than falling back to the default");
+    }
+
+    @Test
+    void getSystemPropertyOrEnvironmentResolvesFromDotEnv() {
+        System.clearProperty("DOTENV_TEST_PLAIN");
+        propsToClean.add("DOTENV_TEST_PLAIN");
+        Environment.reloadDotEnv();
+        String result = Environment.getSystemPropertyOrEnvironment("DOTENV_TEST_PLAIN", "default");
+        assertEquals("plain-dotenv-value", result);
+    }
+
+    @Test
+    void getPropertySystemPropertyOverridesDotEnv() {
+        setProperty("DOTENV_TEST_FSDM_PASSWORD", "from-system");
+        Environment.reloadDotEnv();
+        String result = Environment.getProperty("DOTENV_TEST_FSDM_PASSWORD", "fsdm");
+        assertEquals("from-system", result,
+                "System properties must take precedence over .env values");
+    }
+
+    @Test
+    void dotEnvStripsSurroundingQuotes() {
+        Environment.reloadDotEnv();
+        assertEquals("quoted dotenv value", Environment.getDotEnvEntries().get("DOTENV_TEST_QUOTED"));
+    }
 }

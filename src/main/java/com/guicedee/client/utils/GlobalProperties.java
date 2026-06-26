@@ -18,8 +18,8 @@ package com.guicedee.client.utils;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.google.inject.Singleton;
 import com.guicedee.client.IGuiceContext;
 import lombok.extern.log4j.Log4j2;
@@ -178,7 +178,7 @@ public class GlobalProperties
 														.get(ObjectMapper.class)
 														.writeValueAsString(this);
 				}
-				catch (JsonProcessingException e)
+				catch (JacksonException e)
 				{
 						log.error("Non-Mappable character in GlobalProperties Map, Can't toString()", e);
 						return super.toString();

@@ -40,21 +40,25 @@ public class Environment {
     }
 
     /**
-     * Resolves a property from system properties or environment variables, falling back to a default.
+     * Resolves a property from system properties, environment variables, {@code .env.local}/{@code .env}
+     * files, or the provided default.
+     * <p>
+     * This is a thin alias over {@link #getSystemPropertyOrEnvironment(String, String)} so that legacy
+     * callers automatically benefit from dot-env file resolution. The resolution order is:
+     * <ol>
+     *     <li>System property ({@code -Dkey=value})</li>
+     *     <li>OS environment variable (exact, then {@code UPPER_SNAKE} variant)</li>
+     *     <li>{@code .env.local} then {@code .env}</li>
+     *     <li>Placeholder-resolved default value</li>
+     * </ol>
+     * The resolved value is persisted as a system property for fast subsequent lookups.
      *
      * @param key          the system property or environment variable name
-     * @param defaultValue the value to use when neither source is set
-     * @return the resolved value from system properties, environment variables, or the default
+     * @param defaultValue the value to use when no source is set
+     * @return the resolved value from system properties, environment variables, dot-env files, or the default
      */
     public static String getProperty(String key, String defaultValue) {
-        if (System.getProperty(key) == null) {
-            if (System.getenv(key) == null) {
-                System.setProperty(key, resolvePlaceholders(defaultValue));
-            } else {
-                System.setProperty(key, System.getenv(key));
-            }
-        }
-        return System.getProperty(key);
+        return getSystemPropertyOrEnvironment(key, defaultValue);
     }
 
     /**

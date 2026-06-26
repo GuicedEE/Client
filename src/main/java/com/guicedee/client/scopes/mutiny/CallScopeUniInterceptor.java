@@ -46,21 +46,34 @@ public class CallScopeUniInterceptor
 			{
 				return uni;
 			}
-			INTERCEPTING.set(true);
-			try
-			{
-				CallScoper callScoper = IGuiceContext.get(CallScoper.class);
-				if (callScoper.isStartedScope())
-				{
-					recordTouch(callScoper, "uni-creation", captureLocation());
-				}
-				Map<Key<?>, Object> snapshot = captureCallScope(callScoper);
-				return new CallScopeAwareUni<>(uni, snapshot);
-			}
-			finally
-			{
-				INTERCEPTING.remove();
-			}
+                        INTERCEPTING.set(true);
+                        try
+                        {
+                                CallScoper callScoper;
+                                try
+                                {
+                                        callScoper = IGuiceContext.get(CallScoper.class);
+                                }
+                                catch (RuntimeException noContextYet)
+                                {
+                                        // Mutiny invokes interceptors very early (e.g. during
+                                        // UniCreate.<clinit>) and on any thread. When no Guice
+                                        // context is registered yet — during bootstrap, or in
+                                        // environments without com.guicedee:inject (such as unit
+                                        // tests) — skip call-scope propagation instead of failing.
+                                        return uni;
+                                }
+                                if (callScoper.isStartedScope())
+                                {
+                                        recordTouch(callScoper, "uni-creation", captureLocation());
+                                }
+                                Map<Key<?>, Object> snapshot = captureCallScope(callScoper);
+                                return new CallScopeAwareUni<>(uni, snapshot);
+                        }
+                        finally
+                        {
+                                INTERCEPTING.remove();
+                        }
 		}
 
 		private static final ThreadLocal<Boolean> INTERCEPTING = ThreadLocal.withInitial(() -> false);

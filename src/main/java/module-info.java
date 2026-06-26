@@ -12,8 +12,8 @@ import com.guicedee.client.scopes.mutiny.CallScopeUniInterceptor;
 module com.guicedee.client {
 		requires transitive com.google.guice;
 		requires transitive io.github.classgraph;
-		requires transitive com.fasterxml.jackson.databind;
-		
+		requires transitive tools.jackson.databind;
+
 		//requires transitive jakarta.validation;
 		
 		exports com.guicedee.client;
@@ -42,19 +42,19 @@ module com.guicedee.client {
 		uses IWebSocketMessageReceiver;
 		
 		opens com.guicedee.client.implementations to com.google.guice;
-		opens com.guicedee.client to com.fasterxml.jackson.databind;
+		opens com.guicedee.client to tools.jackson.databind;
 		exports com.guicedee.client.services;
 		exports com.guicedee.client.implementations;
 		exports com.guicedee.client.annotations;
 		exports com.guicedee.client.utils;
-		opens com.guicedee.client.utils to com.fasterxml.jackson.databind;
+		opens com.guicedee.client.utils to tools.jackson.databind;
 		exports com.guicedee.client.scopes;
 		exports com.guicedee.client.scopes.mutiny;
-		opens com.guicedee.client.scopes to com.fasterxml.jackson.databind;
+		opens com.guicedee.client.scopes to tools.jackson.databind;
 		opens com.guicedee.client.services to com.google.guice;
 		opens com.guicedee.client.annotations to com.google.guice;
 		exports com.guicedee.client.services.websocket;
-		opens com.guicedee.client.services.websocket to com.fasterxml.jackson.databind, com.google.guice;
+		opens com.guicedee.client.services.websocket to tools.jackson.databind, com.google.guice;
 		exports com.guicedee.client.services.lifecycle;
 		opens com.guicedee.client.services.lifecycle to com.google.guice;
 		opens com.guicedee.client.services.config to com.google.guice;
