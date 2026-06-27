@@ -42,3 +42,4 @@ Thumbs.db
 .sonar/
 javadoc/
 javadoc.zip
+/src/test/resources/.env
