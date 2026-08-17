@@ -32,9 +32,88 @@ public class LogUtils
     private static final Set<String> names = new HashSet<>();
 
     /**
+     * The default plain console/file pattern.
+     * <p>
+     * Note the use of {@code %c} (the <b>logger name</b>) and not {@code %C} (the <b>caller class name</b>).
+     * Libraries that log through a wrapper - such as the MongoDB driver which routes everything through
+     * {@code com.mongodb.internal.diagnostics.logging.SLF4JLogger}, or JBoss/Netty/Hibernate style
+     * logger facades - would otherwise all be reported as the wrapper class and the real logger
+     * (e.g. {@code org.mongodb.driver.protocol.command}) would be lost.
+     * <p>
+     * {@code %c{1.}} abbreviates every package token except the last, so
+     * {@code org.mongodb.driver.protocol.command} renders as {@code o.m.d.p.command}.
+     * <p>
+     * {@code %C} additionally forces Log4j2 to capture location information (a stack walk) on every
+     * event, which is expensive; {@code %c} is free.
+     */
+    public static final String DEFAULT_PATTERN =
+            "[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-40.40c{1.}] [%t] [%-5level] - [%msg]%n";
+
+    /**
+     * The default highlighted (ANSI) console pattern. See {@link #DEFAULT_PATTERN} for why {@code %c} is used.
+     */
+    public static final String DEFAULT_HIGHLIGHT_PATTERN =
+            "%highlight{[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-40.40c{1.}] [%t] [%-5level]} - %msg%n";
+
+    /**
      * Utility class — not instantiable.
      */
     private LogUtils() {
+    }
+
+    /**
+     * Resolves the plain pattern, allowing a global override via the {@code LOG_PATTERN}
+     * system property or environment variable.
+     *
+     * @return the effective plain pattern layout string
+     */
+    public static String getPattern()
+    {
+        return resolve("LOG_PATTERN", DEFAULT_PATTERN);
+    }
+
+    /**
+     * Resolves the highlighted pattern, allowing a global override via the {@code LOG_PATTERN_HIGHLIGHT}
+     * system property or environment variable.
+     *
+     * @return the effective highlighted pattern layout string
+     */
+    public static String getHighlightPattern()
+    {
+        return resolve("LOG_PATTERN_HIGHLIGHT", DEFAULT_HIGHLIGHT_PATTERN);
+    }
+
+    private static String resolve(String key, String defaultValue)
+    {
+        try
+        {
+            String v = com.guicedee.client.Environment.getSystemPropertyOrEnvironment(key, defaultValue);
+            return Strings.isNullOrEmpty(v) ? defaultValue : v;
+        }
+        catch (Throwable t)
+        {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Sets the level of a specific logger (or logger prefix) at runtime, creating the
+     * {@link LoggerConfig} if it does not already exist.
+     * <p>
+     * Useful for quietening chatty third-party libraries that are bridged in through SLF4J, e.g.
+     * <pre>
+     * LogUtils.setLevel("org.mongodb.driver", Level.INFO);
+     * LogUtils.setLevel("org.mongodb.driver.protocol.command", Level.WARN);
+     * </pre>
+     *
+     * @param loggerName the logger name or package prefix
+     * @param level      the level to apply
+     */
+    public static void setLevel(String loggerName, Level level)
+    {
+        if (Strings.isNullOrEmpty(loggerName) || level == null)
+            return;
+        org.apache.logging.log4j.core.config.Configurator.setLevel(loggerName, level);
     }
 
     private static boolean isCloud()
@@ -68,14 +147,13 @@ public class LogUtils
         }
         if (highlighted)
         {
-            String pattern = "%highlight{[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level]} - %msg%n";
             return PatternLayout.newBuilder()
-                    .withPattern(pattern)
+                    .withPattern(getHighlightPattern())
                     .withAlwaysWriteExceptions(true)
                     .build();
         }
         return PatternLayout.newBuilder()
-                .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level] - [%msg]%n")
+                .withPattern(getPattern())
                 .build();
     }
 
@@ -322,7 +400,7 @@ public class LogUtils
         Configuration config = context.getConfiguration();
 
         PatternLayout layout = PatternLayout.newBuilder()
-                .withPattern(Strings.isNullOrEmpty(pattern) ? "[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level] - [%msg]%n" : pattern)
+                .withPattern(Strings.isNullOrEmpty(pattern) ? getPattern() : pattern)
                 .build();
 
         String logFolderPath = Strings.isNullOrEmpty(baseLogFolder) ? "logs" : baseLogFolder; // Base folder for logs
@@ -363,7 +441,7 @@ public class LogUtils
                 logToRoot,                            // Additivity (false means it will only use its own appenders, not root logger's)
                 Level.DEBUG,                       // Logging level for this specific logger
                 name,   // Logger name
-                "true",                           // Include location for stack traces
+                "false",                          // Include location (stack walk) - not needed, patterns use %c not %C/%L
                 new AppenderRef[]{                 // Appender references
                         AppenderRef.createAppenderRef("RollingFile" + name, Level.DEBUG, null) // Attach appender
                 },

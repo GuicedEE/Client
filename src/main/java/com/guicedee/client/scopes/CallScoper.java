@@ -12,6 +12,7 @@ import io.vertx.core.spi.context.storage.ContextLocal;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,6 +50,18 @@ public class CallScoper implements Scope
     @SuppressWarnings("unchecked")
     private static final ContextLocal<Map<Key<?>, Object>> SCOPE_LOCAL_KEY =
             (ContextLocal<Map<Key<?>, Object>>) (ContextLocal<?>) ContextLocal.registerLocal(Map.class);
+
+    /**
+     * Tracks how many participants have entered the scope on the current context.
+     * <p>
+     * A Vert.x context (and therefore its context-locals) is shared by every task
+     * running on it — including blocking tasks dispatched with
+     * {@code executeBlocking} and concurrently subscribed {@code Uni} chains. Without
+     * a depth counter the first {@link #exit()} would tear the scope down for all the
+     * other participants, causing {@code No scoping block in progress} failures.
+     */
+    private static final ContextLocal<AtomicInteger> SCOPE_DEPTH_KEY =
+            ContextLocal.registerLocal(AtomicInteger.class);
 
     /**
      * Returns the current Vert.x context, or null if not on a Vert.x thread.
@@ -97,6 +110,14 @@ public class CallScoper implements Scope
             else
             {
                 ctx.removeLocal(SCOPE_LOCAL_KEY);
+                try
+                {
+                    ctx.removeLocal(SCOPE_DEPTH_KEY);
+                }
+                catch (IllegalArgumentException localNotAvailable)
+                {
+                    // context created before this local was registered - nothing to clean up
+                }
             }
         }
         else
@@ -105,6 +126,65 @@ public class CallScoper implements Scope
                     "No Vert.x context available on the current thread. " +
                     "CallScoper requires a Vert.x context — ensure this code runs on a Vert.x event-loop, worker, or virtual thread.");
         }
+    }
+
+    /**
+     * Returns the re-entrancy counter of the active scope on this context, or null when absent.
+     */
+    private static AtomicInteger currentDepth()
+    {
+        Context ctx = vertxContext();
+        if (ctx == null)
+        {
+            return null;
+        }
+        try
+        {
+            return ctx.getLocal(SCOPE_DEPTH_KEY);
+        }
+        catch (IllegalArgumentException e)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Registers this participant against the active scope on the current context.
+     */
+    private static void enterDepth()
+    {
+        Context ctx = vertxContext();
+        if (ctx == null)
+        {
+            return;
+        }
+        try
+        {
+            AtomicInteger depth = currentDepth();
+            if (depth == null)
+            {
+                ctx.putLocal(SCOPE_DEPTH_KEY, new AtomicInteger(1));
+            }
+            else
+            {
+                depth.incrementAndGet();
+            }
+        }
+        catch (IllegalArgumentException localNotAvailable)
+        {
+            // context created before this local was registered - fall back to single depth behaviour
+        }
+    }
+
+    /**
+     * Deregisters this participant and reports whether the scope must still stay open.
+     *
+     * @return true when other participants are still inside the scope
+     */
+    private static boolean exitDepthAndStillActive()
+    {
+        AtomicInteger depth = currentDepth();
+        return depth != null && depth.decrementAndGet() > 0;
     }
 
     /**
@@ -121,15 +201,20 @@ public class CallScoper implements Scope
 
     /**
      * Enters a new call scope on the current Vert.x context and notifies enter listeners.
+     * <p>
+     * The call is re-entrant: when a scope is already active on this context the existing
+     * scope is joined and only the matching number of {@link #exit()} calls will close it.
      */
     public void enter()
     {
         if(currentScopeMap() != null)
         {
+            enterDepth();
             Logger.getLogger("CallScoper")
-                    .log(Level.FINEST, "A call scope is already active on this context.");
+                    .log(Level.FINEST, "A call scope is already active on this context - joining it.");
         }else {
             setScopeMap(Maps.<Key<?>, Object>newHashMap());
+            enterDepth();
             // Seed CallScopeProperties and explicitly mark the source as Unknown on scope start
             CallScopeProperties props = new CallScopeProperties();
             props.setSource(CallScopeSource.Unknown);
@@ -160,6 +245,7 @@ public class CallScoper implements Scope
     {
         checkState(currentScopeMap() == null, "A scoping block is already in progress");
         setScopeMap(Maps.<Key<?>, Object>newHashMap());
+        enterDepth();
         CallScopeProperties props = new CallScopeProperties();
         props.setSource(CallScopeSource.Unknown);
         seed(CallScopeProperties.class, props);
@@ -172,6 +258,10 @@ public class CallScoper implements Scope
     public void exitQuietly()
     {
         checkState(currentScopeMap() != null, "No scoping block in progress");
+        if (exitDepthAndStillActive())
+        {
+            return;
+        }
         setScopeMap(null);
     }
 
@@ -197,10 +287,18 @@ public class CallScoper implements Scope
 
     /**
      * Exits the current call scope and notifies exit listeners.
+     * <p>
+     * When the scope was joined re-entrantly the scope stays open until the last
+     * participant exits.
      */
     public void exit()
     {
         checkState(currentScopeMap() != null, "No scoping block in progress");
+        if (exitDepthAndStillActive())
+        {
+            // another participant on this context is still inside the scope
+            return;
+        }
         Set<IOnCallScopeExit> scopeExits = IGuiceContext.loaderToSet(ServiceLoader.load(IOnCallScopeExit.class));
         for (IOnCallScopeExit<?> scopeExit : scopeExits)
         {
