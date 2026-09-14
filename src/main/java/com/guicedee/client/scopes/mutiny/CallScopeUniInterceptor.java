@@ -45,17 +45,8 @@ public class CallScopeUniInterceptor
         }
         INTERCEPTING.set(true);
         try {
-            CallScoper callScoper;
-            try {
-                callScoper = IGuiceContext.get(CallScoper.class);
-            } catch (RuntimeException noContextYet) {
-                // Mutiny invokes interceptors very early (e.g. during
-                // UniCreate.<clinit>) and on any thread. When no Guice
-                // context is registered yet — during bootstrap, or in
-                // environments without com.guicedee:inject (such as unit
-                // tests) — skip call-scope propagation instead of failing.
-                return uni;
-            }
+            CallScoper callScoper = existingScoper();
+            if (callScoper == null) return uni;
             if (callScoper.isStartedScope()) {
                 recordTouch(callScoper, "uni-creation", captureLocation());
             }
@@ -64,6 +55,13 @@ public class CallScopeUniInterceptor
         } finally {
             INTERCEPTING.remove();
         }
+    }
+
+    private static CallScoper existingScoper() {
+        var context = IGuiceContext.contexts.get("default");
+        if (context == null) return null;
+        // An existing injector may resolve its scope; Uni creation must never invoke inject().
+        return context.existingInjector().map(injector -> injector.getInstance(CallScoper.class)).orElse(null);
     }
 
     private static final ThreadLocal<Boolean> INTERCEPTING = ThreadLocal.withInitial(() -> false);
@@ -117,7 +115,11 @@ public class CallScopeUniInterceptor
                     return;
                 }
 
-                CallScoper callScoper = IGuiceContext.get(CallScoper.class);
+                CallScoper callScoper = existingScoper();
+                if (callScoper == null) {
+                    AbstractUni.subscribe(upstream, subscriber);
+                    return;
+                }
                 boolean startedHere = false;
 
                 if (!callScoper.isStartedScope()) {
