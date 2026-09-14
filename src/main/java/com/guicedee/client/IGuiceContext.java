@@ -123,6 +123,12 @@ public interface IGuiceContext {
      */
     Injector inject();
 
+    /** Non-starting lookup for infrastructure that must not bootstrap the application. */
+    default java.util.Optional<Injector> existingInjector() {
+        return java.util.Optional.empty();
+    }
+
+
     /**
      * Returns the Guice configuration backing this context.
      *

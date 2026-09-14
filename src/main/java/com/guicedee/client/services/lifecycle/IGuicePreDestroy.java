@@ -23,7 +23,7 @@ import com.guicedee.client.services.IDefaultService;
  * <p>
  * Purpose: release resources and stop background work before the injector is torn down.
  * Trigger: invoked during {@link com.guicedee.client.IGuiceContext#destroy()}.
- * Order: ascending {@link #sortOrder()}, default 100.
+ * Order: ascending {@link #shutdownSortOrder()}, defaulting to sortOrder().
  * Idempotency: implementations should be safe to invoke once and tolerate repeated calls.
  *
  * @author GedMarc
@@ -36,4 +36,9 @@ public interface IGuicePreDestroy<J extends IGuicePreDestroy<J>> extends IDefaul
 	 * Executes the pre-destroy logic.
 	 */
 	void onDestroy();
+
+    /** Allows infrastructure to start early and stop late without changing existing hooks. */
+    default Integer shutdownSortOrder() {
+        return sortOrder();
+    }
 }
