@@ -74,4 +74,74 @@ class UniBootstrapIsolationTest {
         } finally {vertx.close().toCompletionStage().toCompletableFuture().get(5,java.util.concurrent.TimeUnit.SECONDS);}
     }
 
+    @Test void cancellationRunsOnSubscriptionContextAndPreservesUnrelatedScope() throws Exception {
+        var scoper=new CallScoper();var boots=new AtomicInteger();
+        var injector=Guice.createInjector(new AbstractModule(){protected void configure(){bind(CallScoper.class).toInstance(scoper);}});
+        IGuiceContext.contexts.put("default",context(Optional.of(injector),boots));
+        var vertx=io.vertx.core.Vertx.vertx();
+        try {
+            for(boolean existing:new boolean[]{false,true}) {
+                for(int source=0;source<4;source++) {
+                    var owner=vertx.getOrCreateContext();var foreign=vertx.getOrCreateContext();
+                    assertNotSame(owner,foreign);
+                    var finished=new java.util.concurrent.CompletableFuture<Void>();
+                    var cancellations=new AtomicInteger();
+                    var handle=new java.util.concurrent.atomic.AtomicReference<io.smallrye.mutiny.subscription.Cancellable>();
+                    runInContext(owner,() -> {
+                        assertFalse(scoper.isStartedScope());
+                        if(existing)scoper.enterQuietly();
+                        var caller=existing?scoper.getValues():null;
+                        handle.set(Uni.createFrom().deferred(() -> {
+                            scoper.seed(String.class,"subscription-owner");
+                            return Uni.createFrom().emitter(emitter -> emitter.onTermination(() -> {
+                                try {
+                                    assertSame(owner,io.vertx.core.Vertx.currentContext());
+                                    assertEquals("subscription-owner",scoper.getValues().get(Key.get(String.class)));
+                                    assertEquals(1,cancellations.incrementAndGet());
+                                    owner.runOnContext(ignored -> {
+                                        try {
+                                            assertEquals(existing,scoper.isStartedScope());
+                                            if(existing)assertSame(caller,scoper.getValues());
+                                            finished.complete(null);
+                                        } catch(Throwable failure) {finished.completeExceptionally(failure);}
+                                    });
+                                } catch(Throwable failure) {finished.completeExceptionally(failure);}
+                            }));
+                        }).subscribe().with(value -> finished.completeExceptionally(new AssertionError("Unexpected item")),
+                                finished::completeExceptionally));
+                    });
+                    Runnable cancel=() -> {handle.get().cancel();handle.get().cancel();};
+                    if(source==0)runInContext(owner,cancel);
+                    else if(source==3) {assertNull(io.vertx.core.Vertx.currentContext());cancel.run();}
+                    else {
+                        boolean scoped=source==2;
+                        runInContext(foreign,() -> {
+                            assertFalse(scoper.isStartedScope());
+                            if(scoped) {scoper.enterQuietly();scoper.seed(String.class,"unrelated-caller");}
+                            var previous=scoped?scoper.getValues():null;
+                            try {
+                                cancel.run();
+                                assertEquals(scoped,scoper.isStartedScope());
+                                if(scoped) {
+                                    assertSame(previous,scoper.getValues());
+                                    assertEquals("unrelated-caller",scoper.getValues().get(Key.get(String.class)));
+                                }
+                            } finally {if(scoped && scoper.isStartedScope())scoper.exitQuietly();}
+                        });
+                    }
+                    finished.get(5,java.util.concurrent.TimeUnit.SECONDS);
+                    runInContext(owner,() -> {if(existing)scoper.exitQuietly();assertFalse(scoper.isStartedScope());});
+                }
+            }
+            assertEquals(0,boots.get());
+        } finally {vertx.close().toCompletionStage().toCompletableFuture().get(5,java.util.concurrent.TimeUnit.SECONDS);}
+    }
+    private static void runInContext(io.vertx.core.Context context,Runnable action) throws Exception {
+        var done=new java.util.concurrent.CompletableFuture<Void>();
+        context.runOnContext(ignored -> {
+            try {action.run();done.complete(null);}catch(Throwable failure) {done.completeExceptionally(failure);}
+        });
+        done.get(5,java.util.concurrent.TimeUnit.SECONDS);
+    }
+
 }

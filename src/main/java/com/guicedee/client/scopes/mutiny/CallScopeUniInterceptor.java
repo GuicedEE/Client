@@ -157,12 +157,14 @@ public class CallScopeUniInterceptor
         private final UniSubscriber<? super T> delegate;
         private final CallScoper callScoper;
         private final boolean startedScope;
+        private final io.vertx.core.Context subscriptionContext;
         private final AtomicBoolean ended = new AtomicBoolean(false);
 
         private ScopedUniSubscriber(UniSubscriber<? super T> delegate, CallScoper callScoper, boolean startedScope) {
             this.delegate = delegate;
             this.callScoper = callScoper;
             this.startedScope = startedScope;
+            this.subscriptionContext = io.vertx.core.Vertx.currentContext();
         }
 
         /**
@@ -172,9 +174,8 @@ public class CallScopeUniInterceptor
          */
         @Override
         public void onSubscribe(UniSubscription subscription) {
-            UniSubscription wrapped = startedScope ? new ScopedUniSubscription(subscription,
-                                                                               this::endScope
-            ) : subscription;
+            // Even caller-owned scopes need cancellation callbacks on their original context.
+            UniSubscription wrapped = new ScopedUniSubscription(subscription, this::endScope, subscriptionContext);
             try {
                 delegate.onSubscribe(wrapped);
             } catch (Throwable t) {
@@ -227,10 +228,14 @@ public class CallScopeUniInterceptor
     private static final class ScopedUniSubscription implements UniSubscription {
         private final UniSubscription delegate;
         private final Runnable onCancel;
+        private final io.vertx.core.Context subscriptionContext;
+        private final AtomicBoolean cancelled = new AtomicBoolean();
 
-        private ScopedUniSubscription(UniSubscription delegate, Runnable onCancel) {
+        private ScopedUniSubscription(UniSubscription delegate, Runnable onCancel,
+                                      io.vertx.core.Context subscriptionContext) {
             this.delegate = delegate;
             this.onCancel = onCancel;
+            this.subscriptionContext = subscriptionContext;
         }
 
         /**
@@ -244,14 +249,25 @@ public class CallScopeUniInterceptor
         }
 
         /**
-         * Cancels the upstream subscription and triggers the scope cleanup callback.
+         * Cancels upstream and cleans up on the subscription context. Off-context cancellation
+         * is asynchronous; repeated cancellation schedules no additional work.
          */
         @Override
         public void cancel() {
-            try {
-                delegate.cancel();
-            } finally {
-                onCancel.run();
+            if (!cancelled.compareAndSet(false, true)) return;
+            Runnable cancellation = () -> {
+                try {
+                    delegate.cancel();
+                } finally {
+                    onCancel.run();
+                }
+            };
+            // Cleanup may read context-local security state or close a reactive session.
+            // Dispatch the entire upstream cancellation before releasing its scope.
+            if (io.vertx.core.Vertx.currentContext() == subscriptionContext) {
+                cancellation.run();
+            } else {
+                subscriptionContext.runOnContext(ignored -> cancellation.run());
             }
         }
     }
