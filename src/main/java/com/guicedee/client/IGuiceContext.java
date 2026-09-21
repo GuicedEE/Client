@@ -279,7 +279,13 @@ public interface IGuiceContext {
 
         Set<T> outcomes = new TreeSet<>();
         for (Class<?> aClass : loaderClasses.get(type)) {
-            outcomes.add((T) IGuiceContext.get(aClass));
+            try {
+                //noinspection unchecked
+                outcomes.add((T) IGuiceContext.get(aClass));
+            }catch (Throwable t)
+            {
+                LogManager.getLogger(IGuiceContext.class).error("❌ Failed to provide instance of '{}' to TreeSet: {}", type, t.getMessage(), t);
+            }
         }
         return outcomes;
     }
