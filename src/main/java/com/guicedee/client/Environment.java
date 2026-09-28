@@ -81,8 +81,7 @@ public class Environment {
                 System.setProperty(name, System.getenv(name));
                 return System.getProperty(name);
             } catch (Exception T) {
-                log.debug("⚠️ Couldn't set system property value from environment - Name: '{}', Default: '{}'",
-                        name, defaultValue, T);
+                log.debug("⚠️ Couldn't set system property value from environment - Name: '{}'", name, T);
                 return System.getenv(name);
             }
         }
@@ -92,8 +91,8 @@ public class Environment {
                 System.setProperty(name, System.getenv(envName));
                 return System.getProperty(name);
             } catch (Exception T) {
-                log.debug("⚠️ Couldn't set system property value from environment - Name: '{}', EnvName: '{}', Default: '{}'",
-                        name, envName, defaultValue, T);
+                log.debug("⚠️ Couldn't set system property value from environment - Name: '{}', EnvName: '{}'",
+                        name, envName, T);
                 return System.getenv(envName);
             }
         }
@@ -101,7 +100,7 @@ public class Environment {
         // Check .env.local (higher priority than .env)
         String dotEnvLocalValue = getDotEnvValue(name, dotEnvLocalEntries);
         if (dotEnvLocalValue != null) {
-            log.debug("📄 Resolved from .env.local - Name: '{}', Value: '{}'", name, dotEnvLocalValue);
+            log.debug("📄 Resolved from .env.local - Name: '{}'", name);
             try {
                 System.setProperty(name, dotEnvLocalValue);
                 return System.getProperty(name);
@@ -113,7 +112,7 @@ public class Environment {
         // Check .env
         String dotEnvValue = getDotEnvValue(name, dotEnvEntries);
         if (dotEnvValue != null) {
-            log.debug("📄 Resolved from .env - Name: '{}', Value: '{}'", name, dotEnvValue);
+            log.debug("📄 Resolved from .env - Name: '{}'", name);
             try {
                 System.setProperty(name, dotEnvValue);
                 return System.getProperty(name);
@@ -126,13 +125,12 @@ public class Environment {
             return "";
         }
         String resolvedDefault = resolvePlaceholders(defaultValue);
-        log.trace("📋 Using default value for property - Name: '{}', Value: '{}'", name, resolvedDefault);
+        log.trace("📋 Using default value for property - Name: '{}'", name);
         try {
             System.setProperty(name, resolvedDefault);
             return System.getProperty(name);
         } catch (Exception T) {
-            log.debug("⚠️ Couldn't set system property to default value - Name: '{}', Value: '{}'",
-                    name, resolvedDefault, T);
+            log.debug("⚠️ Couldn't set system property to default value - Name: '{}'", name, T);
             return resolvedDefault;
         }
     }
