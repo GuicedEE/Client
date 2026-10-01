@@ -13,6 +13,9 @@
 Dependency injection interfaces, lifecycle hooks, and scoping primitives for the [GuicedEE](https://github.com/GuicedEE) ecosystem.
 Built on [Google Guice](https://github.com/google/guice) and fully modularized for JPMS (`com.guicedee.client`).
 
+See [call-scope Uni lifecycle](docs/call-scope-uni-lifecycle.md) for completion,
+reference release, and cancellation ownership.
+
 This library is the **client SPI** — it defines the contracts that all GuicedEE modules program against without pulling in the full runtime.
 
 ## 📦 Installation

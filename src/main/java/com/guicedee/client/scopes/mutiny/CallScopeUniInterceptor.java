@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Mutiny {@link UniInterceptor} that propagates {@link com.guicedee.client.scopes.CallScope} state.
@@ -159,6 +160,7 @@ public class CallScopeUniInterceptor
         private final boolean startedScope;
         private final io.vertx.core.Context subscriptionContext;
         private final AtomicBoolean ended = new AtomicBoolean(false);
+        private ScopedUniSubscription subscription;
 
         private ScopedUniSubscriber(UniSubscriber<? super T> delegate, CallScoper callScoper, boolean startedScope) {
             this.delegate = delegate;
@@ -175,10 +177,12 @@ public class CallScopeUniInterceptor
         @Override
         public void onSubscribe(UniSubscription subscription) {
             // Even caller-owned scopes need cancellation callbacks on their original context.
-            UniSubscription wrapped = new ScopedUniSubscription(subscription, this::endScope, subscriptionContext);
+            ScopedUniSubscription wrapped = new ScopedUniSubscription(subscription, this::endScope, subscriptionContext);
+            this.subscription = wrapped;
             try {
                 delegate.onSubscribe(wrapped);
             } catch (Throwable t) {
+                wrapped.complete();
                 endScope();
                 throw t;
             }
@@ -191,6 +195,7 @@ public class CallScopeUniInterceptor
          */
         @Override
         public void onItem(T item) {
+            releaseSubscription();
             try {
                 delegate.onItem(item);
             } finally {
@@ -205,10 +210,18 @@ public class CallScopeUniInterceptor
          */
         @Override
         public void onFailure(Throwable failure) {
+            releaseSubscription();
             try {
                 delegate.onFailure(failure);
             } finally {
                 endScope();
+            }
+        }
+
+        private void releaseSubscription() {
+            if (subscription != null) {
+                subscription.complete();
+                subscription = null;
             }
         }
 
@@ -226,16 +239,20 @@ public class CallScopeUniInterceptor
      * Subscription wrapper that invokes a callback on cancel.
      */
     private static final class ScopedUniSubscription implements UniSubscription {
-        private final UniSubscription delegate;
-        private final Runnable onCancel;
+        private record Pending(UniSubscription delegate, Runnable onCancel) {}
+
+        private final AtomicReference<Pending> pending;
         private final io.vertx.core.Context subscriptionContext;
-        private final AtomicBoolean cancelled = new AtomicBoolean();
 
         private ScopedUniSubscription(UniSubscription delegate, Runnable onCancel,
                                       io.vertx.core.Context subscriptionContext) {
-            this.delegate = delegate;
-            this.onCancel = onCancel;
+            this.pending = new AtomicReference<>(new Pending(delegate, onCancel));
             this.subscriptionContext = subscriptionContext;
+        }
+
+        private void complete() {
+            // Downstream operators may retain this handle until their outer Uni finishes.
+            pending.set(null);
         }
 
         /**
@@ -245,7 +262,8 @@ public class CallScopeUniInterceptor
          */
         @Override
         public void request(long n) {
-            delegate.request(n);
+            Pending current = pending.get();
+            if (current != null) current.delegate().request(n);
         }
 
         /**
@@ -254,12 +272,13 @@ public class CallScopeUniInterceptor
          */
         @Override
         public void cancel() {
-            if (!cancelled.compareAndSet(false, true)) return;
+            Pending current = pending.getAndSet(null);
+            if (current == null) return;
             Runnable cancellation = () -> {
                 try {
-                    delegate.cancel();
+                    current.delegate().cancel();
                 } finally {
-                    onCancel.run();
+                    current.onCancel().run();
                 }
             };
             // Cleanup may read context-local security state or close a reactive session.

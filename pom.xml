@@ -107,6 +107,7 @@
                 <configuration>
                     <argLine>
                         --add-opens com.guicedee.client/com.guicedee.client.scopes=com.guicedee.inject.client.test
+                        --add-opens com.guicedee.client/com.guicedee.client.scopes.mutiny=com.guicedee.inject.client.test
                     </argLine>
                 </configuration>
             </plugin>
