@@ -61,7 +61,7 @@ import java.util.Set;
 public interface IPathContentsRejectListScanner<J extends IPathContentsRejectListScanner<J>>
 		extends IDefaultService<J> {
 	/**
-	 * If you only need to scan resources and not classes, .enableClassInfo() or .enableAllInfo() should not be called, for speed. Also, if you don't need to scan classes, you
+	 * If you only need to scan resources and not classes, .enableClassInfo() should not be called, for speed. Also, if you don't need to scan classes, you
 	 * should specify the whitelist by calling .whitelistPaths() and using path separators (/), rather than by calling .whitelistPackages() and using package separators (.). Path
 	 * and package whitelists work the same way internally, you can just choose one way or the other of specifying the whitelist/blacklist. However, calling .whitelistPackages()
 	 * also implicitly calls .enableClassInfo().

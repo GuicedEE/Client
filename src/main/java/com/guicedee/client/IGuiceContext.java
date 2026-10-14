@@ -1,5 +1,7 @@
 package com.guicedee.client;
 
+import com.guicedee.client.utils.ClassLoading;
+
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.guicedee.client.annotations.INotEnhanceable;
@@ -258,8 +260,8 @@ public interface IGuiceContext {
             if (config.isServiceLoadWithClassPath()) {
                 for (ClassInfo classInfo : instance()
                         .getScanResult()
-                        .getClassesImplementing(type)) {
-                    Class<T> load = (Class<T>) classInfo.loadClass();
+                        .getAllClassesImplementing(type)) {
+                    Class<T> load = (Class<T>) ClassLoading.loadClass(classInfo);
                     loadeds.add(load);
                 }
             }
@@ -306,8 +308,8 @@ public interface IGuiceContext {
         if (config.isServiceLoadWithClassPath() && instance().getScanResult() != null) {
             for (ClassInfo classInfo : instance()
                     .getScanResult()
-                    .getClassesImplementing(type)) {
-                Class<T> load = (Class<T>) classInfo.loadClass();
+                    .getAllClassesImplementing(type)) {
+                Class<T> load = (Class<T>) ClassLoading.loadClass(classInfo);
                 loadeds.add(load);
             }
         }
@@ -349,9 +351,9 @@ public interface IGuiceContext {
             if (config.isServiceLoadWithClassPath()) {
                 for (ClassInfo classInfo : instance()
                         .getScanResult()
-                        .getClassesImplementing(type)) {
+                        .getAllClassesImplementing(type)) {
                     @SuppressWarnings("unchecked")
-                    Class<T> load = (Class<T>) classInfo.loadClass();
+                    Class<T> load = (Class<T>) ClassLoading.loadClass(classInfo);
                     loadeds.add(load);
                 }
             } else {
