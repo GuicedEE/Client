@@ -15,7 +15,7 @@ import org.apache.logging.log4j.core.appender.rolling.TimeBasedTriggeringPolicy;
 import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.layout.JsonLayout;
+import org.apache.logging.log4j.layout.template.json.JsonTemplateLayout;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.core.Appender;
 
@@ -139,11 +139,7 @@ public class LogUtils
         if (isCloud())
         {
             // JSON output for cloud-friendly ingestion
-            return JsonLayout.newBuilder()
-                    .setComplete(false)
-                    .setCompact(true)
-                    .setEventEol(true)
-                    .build();
+            return jsonLayout(((LoggerContext) LogManager.getContext(false)).getConfiguration());
         }
         if (highlighted)
         {
@@ -154,6 +150,15 @@ public class LogUtils
         }
         return PatternLayout.newBuilder()
                 .withPattern(getPattern())
+                .build();
+    }
+
+    /** Builds newline-delimited cloud JSON without Jackson 2. */
+    public static Layout<? extends Serializable> jsonLayout(Configuration configuration)
+    {
+        return JsonTemplateLayout.newBuilder()
+                .setConfiguration(configuration)
+                .setEventTemplateUri("classpath:JsonLayout.json")
                 .build();
     }
 

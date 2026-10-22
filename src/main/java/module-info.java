@@ -27,6 +27,7 @@ module com.guicedee.client {
 		
 		//slf4j config
 		requires org.apache.logging.log4j.core;
+        requires org.apache.logging.log4j.layout.template.json;
 		requires org.apache.logging.log4j.jul;
 		requires org.apache.logging.log4j;
 		requires org.apache.logging.log4j.slf4j2.impl;
